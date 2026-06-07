@@ -1,0 +1,21 @@
+.control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.65rem;
+
+  label {
+    display: grid;
+    gap: 0.3rem;
+    min-width: min(100%, 16rem);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 560px) {
+  .control {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

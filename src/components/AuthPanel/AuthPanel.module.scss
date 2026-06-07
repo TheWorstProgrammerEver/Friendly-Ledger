@@ -1,0 +1,41 @@
+.panel {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 28rem;
+  margin: 8svh auto 0;
+
+  header,
+  form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  h1,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    line-height: 1;
+  }
+
+  p {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  label {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 700;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
