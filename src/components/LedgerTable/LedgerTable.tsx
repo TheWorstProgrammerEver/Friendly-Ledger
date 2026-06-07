@@ -1,4 +1,5 @@
 import { formatMoney } from '../../domain/money'
+import { useConfirmation } from '../../hooks/useConfirmation'
 import type { LedgerEntry } from '../../types'
 import styles from './LedgerTable.module.scss'
 
@@ -7,7 +8,10 @@ type LedgerTableProps = {
   onDeleteEntry: (entryId: string) => void
 }
 
-export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => (
+export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => {
+  const confirmDelete = useConfirmation('Delete this manual entry?')
+
+  return (
     <section className={styles.panel} aria-labelledby="entries-title">
       <h2 id="entries-title">Entries</h2>
 
@@ -34,7 +38,12 @@ export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => (
                   <td>{entry.source}</td>
                   <td>
                     {entry.source === 'manual' ? (
-                      <button type="button" onClick={() => onDeleteEntry(entry.id)}>Delete</button>
+                      <button
+                        type="button"
+                        onClick={() => confirmDelete(() => onDeleteEntry(entry.id))}
+                      >
+                        Delete
+                      </button>
                     ) : (
                       <span className={styles.implicit}>Implicit</span>
                     )}
@@ -48,4 +57,5 @@ export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => (
         <p>No entries</p>
       )}
     </section>
-)
+  )
+}

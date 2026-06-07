@@ -7,12 +7,14 @@ import { InviteMemberForm } from '../../components/InviteMemberForm/InviteMember
 import { LedgerTable } from '../../components/LedgerTable/LedgerTable'
 import { AddRecurringForm, EditRecurringForm } from '../../components/RecurringForm/RecurringForm'
 import { RecurringRules } from '../../components/RecurringRules/RecurringRules'
+import { useConfirmation } from '../../hooks/useConfirmation'
 import { useGroupSummaryScreenViewModel } from './useGroupSummaryScreenViewModel'
 import styles from './GroupSummaryScreen.module.scss'
 
 export const GroupSummaryScreen = () => {
   const viewModel = useGroupSummaryScreenViewModel()
   const { group, selectedRecurringItem } = viewModel
+  const confirmDeleteRecurring = useConfirmation('Delete this recurring rule?')
 
   if (viewModel.shouldRedirect || !group) {
     return <Navigate to="/groups/manage" replace />
@@ -106,7 +108,12 @@ export const GroupSummaryScreen = () => {
         footer={selectedRecurringItem ? (
           <DialogFooterActions>
             <button type="submit" form={viewModel.editRecurringFormId}>Save recurring</button>
-            <button type="button" onClick={viewModel.deleteSelectedRecurringItem}>Delete</button>
+            <button
+              type="button"
+              onClick={() => confirmDeleteRecurring(viewModel.deleteSelectedRecurringItem)}
+            >
+              Delete
+            </button>
           </DialogFooterActions>
         ) : undefined}
       >

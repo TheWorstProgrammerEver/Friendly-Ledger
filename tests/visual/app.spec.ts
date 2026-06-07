@@ -61,6 +61,16 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await expect(
     page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: '$45.00' })
   ).toBeVisible()
+
+  page.once('dialog', (dialog) => dialog.dismiss())
+  await page.getByRole('region', { name: 'Entries' }).getByRole('button', { name: 'Delete' }).click()
+  await expect(
+    page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: '$45.00' })
+  ).toBeVisible()
+
+  page.once('dialog', (dialog) => dialog.accept())
+  await page.getByRole('region', { name: 'Entries' }).getByRole('button', { name: 'Delete' }).click()
+  await expect(page.getByRole('region', { name: 'Entries' }).getByText('No entries')).toBeVisible()
 })
 
 test('recurring rules are implicit ledger entries', async ({ page }) => {
@@ -127,6 +137,11 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
   })
 
   await page.getByRole('button', { name: 'Edit' }).click()
+  page.once('dialog', (dialog) => dialog.dismiss())
+  await page.getByRole('dialog', { name: 'Edit recurring' }).getByRole('button', { name: 'Delete' }).click()
+  await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
+
+  page.once('dialog', (dialog) => dialog.accept())
   await page.getByRole('dialog', { name: 'Edit recurring' }).getByRole('button', { name: 'Delete' }).click()
 
   await expect(page.getByRole('region', { name: 'Recurring' }).getByText('No recurring rules')).toBeVisible()
