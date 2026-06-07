@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { AppDialog } from '../../components/AppDialog/AppDialog'
+import { AppDialog, DialogFooterActions } from '../../components/AppDialog/AppDialog'
 import { GroupCreator } from '../../components/GroupCreator/GroupCreator'
 import { InvitationPanel } from '../../components/InvitationPanel/InvitationPanel'
 import { useManageGroupsScreenViewModel } from './useManageGroupsScreenViewModel'
@@ -40,8 +40,13 @@ export const ManageGroupsScreen = () => {
         open={viewModel.creatingGroup}
         title="Create group"
         onClose={viewModel.closeCreateGroup}
+        footer={(
+          <DialogFooterActions>
+            <button type="submit" form={viewModel.createGroupFormId}>Create group</button>
+          </DialogFooterActions>
+        )}
       >
-        <GroupCreator onCreateGroup={viewModel.createGroup} />
+        <GroupCreator formId={viewModel.createGroupFormId} onCreateGroup={viewModel.createGroup} />
       </AppDialog>
     </section>
   )

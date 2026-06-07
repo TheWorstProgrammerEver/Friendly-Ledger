@@ -50,15 +50,34 @@ export const GroupSummaryScreen = () => {
         onDeleteEntry={viewModel.deleteEntry}
       />
 
-      <AppDialog open={viewModel.dialog === 'entry'} title="Add entry" onClose={viewModel.closeDialog}>
+      <AppDialog
+        open={viewModel.dialog === 'entry'}
+        title="Add entry"
+        onClose={viewModel.closeDialog}
+        footer={(
+          <DialogFooterActions>
+            <button type="submit" form={viewModel.entryFormId}>Add entry</button>
+          </DialogFooterActions>
+        )}
+      >
         <EntryForm
+          formId={viewModel.entryFormId}
           today={viewModel.asOfDate}
           onAdd={viewModel.addEntry}
         />
       </AppDialog>
 
-      <AppDialog open={viewModel.dialog === 'invite'} title="Invite member" onClose={viewModel.closeDialog}>
-        <InviteMemberForm onInvite={viewModel.inviteMember} />
+      <AppDialog
+        open={viewModel.dialog === 'invite'}
+        title="Invite member"
+        onClose={viewModel.closeDialog}
+        footer={(
+          <DialogFooterActions>
+            <button type="submit" form={viewModel.inviteMemberFormId}>Invite</button>
+          </DialogFooterActions>
+        )}
+      >
+        <InviteMemberForm formId={viewModel.inviteMemberFormId} onInvite={viewModel.inviteMember} />
       </AppDialog>
 
       <AppDialog

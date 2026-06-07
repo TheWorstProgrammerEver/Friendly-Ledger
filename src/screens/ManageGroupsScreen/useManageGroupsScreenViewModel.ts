@@ -2,6 +2,8 @@ import { useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLedger } from '../../state/LedgerContext'
 
+const createGroupFormId = 'create-group-form'
+
 export const useManageGroupsScreenViewModel = () => {
   const ledger = useLedger()
   const navigate = useNavigate()
@@ -28,6 +30,7 @@ export const useManageGroupsScreenViewModel = () => {
   return {
     closeCreateGroup,
     createGroup,
+    createGroupFormId,
     creatingGroup,
     groups: ledger.state.groups,
     invitationViewModel: ledger,

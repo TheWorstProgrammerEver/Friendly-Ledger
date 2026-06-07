@@ -2,14 +2,15 @@ import { useState } from 'react'
 import styles from './InviteMemberForm.module.scss'
 
 type InviteMemberFormProps = {
+  formId: string
   onInvite: (email: string) => void
 }
 
-export const InviteMemberForm = ({ onInvite }: InviteMemberFormProps) => {
+export const InviteMemberForm = ({ formId, onInvite }: InviteMemberFormProps) => {
   const [email, setEmail] = useState('')
 
   return (
-    <form className={styles.form} onSubmit={(event) => {
+    <form id={formId} className={styles.form} onSubmit={(event) => {
       event.preventDefault()
       onInvite(email)
       setEmail('')
@@ -22,8 +23,6 @@ export const InviteMemberForm = ({ onInvite }: InviteMemberFormProps) => {
           onChange={(event) => setEmail(event.target.value)}
         />
       </label>
-
-      <button type="submit">Invite</button>
     </form>
   )
 }

@@ -10,6 +10,8 @@ import { useLedger } from '../../state/LedgerContext'
 
 const addRecurringFormId = 'add-recurring-form'
 const editRecurringFormId = 'edit-recurring-form'
+const entryFormId = 'entry-form'
+const inviteMemberFormId = 'invite-member-form'
 
 export const useGroupSummaryScreenViewModel = () => {
   const { groupId } = useParams()
@@ -131,10 +133,12 @@ export const useGroupSummaryScreenViewModel = () => {
     deleteSelectedRecurringItem,
     dialog,
     editRecurringFormId,
+    entryFormId,
     entries,
     group,
     inviteMember,
     currentDate,
+    inviteMemberFormId,
     openAddEntryDialog: () => updateSearchParams({ dialog: 'entry' }),
     openAddRecurringDialog: () => updateSearchParams({ dialog: 'recurring' }),
     openInviteDialog: () => updateSearchParams({ dialog: 'invite' }),

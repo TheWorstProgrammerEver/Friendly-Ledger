@@ -10,11 +10,12 @@ export type EntryFormInput = {
 }
 
 type EntryFormProps = {
+  formId: string
   today: string
   onAdd: (input: EntryFormInput) => void
 }
 
-export const EntryForm = ({ today, onAdd }: EntryFormProps) => {
+export const EntryForm = ({ formId, today, onAdd }: EntryFormProps) => {
   const [date, setDate] = useState(today)
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('General')
@@ -23,6 +24,7 @@ export const EntryForm = ({ today, onAdd }: EntryFormProps) => {
 
   return (
     <form
+      id={formId}
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
@@ -64,7 +66,6 @@ export const EntryForm = ({ today, onAdd }: EntryFormProps) => {
         <input value={description} onChange={(event) => setDescription(event.target.value)} />
       </label>
 
-      <button type="submit">Add entry</button>
     </form>
   )
 }

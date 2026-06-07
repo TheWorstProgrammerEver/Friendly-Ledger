@@ -2,6 +2,7 @@ import { useState } from 'react'
 import styles from './GroupCreator.module.scss'
 
 type GroupCreatorProps = {
+  formId: string
   onCreateGroup: (name: string, inviteEmails: string[]) => void
 }
 
@@ -10,12 +11,13 @@ const splitEmails = (value: string) => value
   .map((email) => email.trim())
   .filter(Boolean)
 
-export const GroupCreator = ({ onCreateGroup }: GroupCreatorProps) => {
+export const GroupCreator = ({ formId, onCreateGroup }: GroupCreatorProps) => {
   const [name, setName] = useState('')
   const [inviteEmails, setInviteEmails] = useState('')
 
   return (
     <form
+      id={formId}
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
@@ -37,8 +39,6 @@ export const GroupCreator = ({ onCreateGroup }: GroupCreatorProps) => {
           onChange={(event) => setInviteEmails(event.target.value)}
         />
       </label>
-
-      <button type="submit">Create group</button>
     </form>
   )
 }
