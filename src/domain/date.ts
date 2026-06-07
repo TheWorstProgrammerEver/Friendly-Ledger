@@ -8,6 +8,12 @@ export const toLocalIsoDate = (date: Date) => (
 
 export const todayIso = () => toLocalIsoDate(new Date())
 
+export const fromLocalIsoDate = (isoDate: string) => {
+  const [year, month, day] = isoDate.split('-').map(Number)
+
+  return new Date(year, month - 1, day)
+}
+
 const fromIso = (isoDate: string) => {
   const [year, month, day] = isoDate.split('-').map(Number)
 

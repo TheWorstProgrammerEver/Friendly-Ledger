@@ -25,17 +25,17 @@ export const GroupSummaryScreen = () => {
           <h2 id="group-title">{group.name}</h2>
           <p>{group.members.length} people</p>
         </div>
-        <InviteMemberForm onInvite={viewModel.inviteMember} />
-      </header>
 
-      <div className={styles.actions}>
-        <button type="button" onClick={viewModel.openAddEntryDialog}>Add entry</button>
-        <AsOfControl
-          value={viewModel.asOfDate}
-          onChange={viewModel.setAsOfDate}
-          onReset={viewModel.resetAsOfDate}
-        />
-      </div>
+        <div className={styles.actions}>
+          <button type="button" onClick={viewModel.openInviteDialog}>Invite</button>
+          <button type="button" onClick={viewModel.openAddEntryDialog}>Add entry</button>
+          <AsOfControl
+            currentDate={viewModel.currentDate}
+            value={viewModel.asOfValue}
+            onChange={viewModel.setAsOfValue}
+          />
+        </div>
+      </header>
 
       <BalanceSummary balanceCents={viewModel.balance.balanceCents} entryCount={viewModel.balance.entryCount} />
 
@@ -55,6 +55,10 @@ export const GroupSummaryScreen = () => {
           today={viewModel.asOfDate}
           onAdd={viewModel.addEntry}
         />
+      </AppDialog>
+
+      <AppDialog open={viewModel.dialog === 'invite'} title="Invite member" onClose={viewModel.closeDialog}>
+        <InviteMemberForm onInvite={viewModel.inviteMember} />
       </AppDialog>
 
       <AppDialog

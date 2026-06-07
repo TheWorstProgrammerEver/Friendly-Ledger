@@ -41,6 +41,13 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await signIn(page)
   await createGroup(page)
 
+  await page.getByRole('button', { name: 'Invite' }).click()
+
+  const inviteMember = page.getByRole('dialog', { name: 'Invite member' })
+  await inviteMember.getByLabel('Invite').fill('alex@example.com')
+  await inviteMember.getByRole('button', { name: 'Invite' }).click()
+  await expect(page.getByText('3 people')).toBeVisible()
+
   await page.getByRole('button', { name: 'Add entry' }).click()
 
   const newEntry = page.getByRole('dialog', { name: 'Add entry' })
@@ -85,7 +92,8 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Implicit')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Weekly rent')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('Deficit')).toBeVisible()
-  await page.getByLabel('As of').fill(futureDate)
+  await page.goto(`${new URL(page.url()).pathname}?asOf=${futureDate}`)
+  await expect(page.getByRole('button', { name: `As of ${futureDate}` })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('-$1,500.00')).toBeVisible()
   expect(savedStateAfterAdd).toEqual({
     entryCount: 0,

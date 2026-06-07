@@ -58,11 +58,6 @@
 }
 
 @media (max-width: 560px) {
-  .header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .footerActions {
     flex-direction: column-reverse;
 

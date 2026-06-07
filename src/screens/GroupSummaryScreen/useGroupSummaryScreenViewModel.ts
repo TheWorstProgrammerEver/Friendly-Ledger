@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
+import type { AsOfValue } from '../../components/AsOfControl/AsOfControl'
 import type { EntryFormInput } from '../../components/EntryForm/EntryForm'
 import type { RecurringFormInput } from '../../components/RecurringForm/RecurringForm'
-import { todayIso } from '../../domain/date'
+import { fromLocalIsoDate, todayIso, toLocalIsoDate } from '../../domain/date'
 import { getGroupBalance } from '../../domain/ledger'
 import { getEffectiveLedgerEntries } from '../../domain/recurrence'
 import { useLedger } from '../../state/LedgerContext'
@@ -18,9 +19,10 @@ export const useGroupSummaryScreenViewModel = () => {
   const group = ledger.state.groups.find((candidate) => candidate.id === groupId)
   const dialog = searchParams.get('dialog')
   const recurringId = searchParams.get('recurringId')
-  const defaultAsOfDate = useMemo(() => todayIso(), [groupId])
   const rawAsOfDate = searchParams.get('asOf')
-  const asOfDate = rawAsOfDate?.slice(0, 10) || defaultAsOfDate
+  const currentDate = fromLocalIsoDate(todayIso())
+  const asOfValue: AsOfValue = rawAsOfDate ? fromLocalIsoDate(rawAsOfDate.slice(0, 10)) : 'Now'
+  const asOfDate = asOfValue === 'Now' ? toLocalIsoDate(currentDate) : toLocalIsoDate(asOfValue)
   const selectedRecurringItem = group?.recurringItems.find((item) => item.id === recurringId)
 
   useEffect(() => {
@@ -100,8 +102,9 @@ export const useGroupSummaryScreenViewModel = () => {
   const inviteMember = useCallback((email: string) => {
     if (group) {
       ledger.inviteMemberToGroup(group.id, email)
+      closeDialog()
     }
-  }, [group, ledger])
+  }, [closeDialog, group, ledger])
 
   const updateSelectedRecurringItem = useCallback((input: RecurringFormInput) => {
     if (!group || !selectedRecurringItem) {
@@ -112,11 +115,16 @@ export const useGroupSummaryScreenViewModel = () => {
     closeDialog()
   }, [closeDialog, group, ledger, selectedRecurringItem])
 
+  const setAsOfValue = useCallback((value: AsOfValue) => {
+    updateSearchParams({ asOf: value === 'Now' ? undefined : toLocalIsoDate(value) }, true)
+  }, [updateSearchParams])
+
   return {
     addEntry,
     addRecurringItem,
     addRecurringFormId,
     asOfDate,
+    asOfValue,
     balance,
     closeDialog,
     deleteEntry,
@@ -126,12 +134,13 @@ export const useGroupSummaryScreenViewModel = () => {
     entries,
     group,
     inviteMember,
+    currentDate,
     openAddEntryDialog: () => updateSearchParams({ dialog: 'entry' }),
     openAddRecurringDialog: () => updateSearchParams({ dialog: 'recurring' }),
+    openInviteDialog: () => updateSearchParams({ dialog: 'invite' }),
     openEditRecurringDialog: (itemId: string) => updateSearchParams({ dialog: 'edit-recurring', recurringId: itemId }),
-    resetAsOfDate: () => updateSearchParams({ asOf: todayIso() }, true),
     selectedRecurringItem,
-    setAsOfDate: (value: string) => updateSearchParams({ asOf: value }),
+    setAsOfValue,
     shouldRedirect: !groupId || !group || !ledger.currentAccount,
     updateSelectedRecurringItem
   }
