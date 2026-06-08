@@ -24,7 +24,7 @@ export const AsOfControl = ({ currentDate, value, onChange }: AsOfControlProps) 
   const nowSelected = isNow(value)
   const menuDate = nowSelected ? currentDate : value
   const menuDateValue = toLocalIsoDate(menuDate)
-  const buttonLabel = nowSelected ? 'Now' : menuDateValue
+  const buttonLabel = nowSelected ? 'As of now' : `As of ${menuDateValue}`
 
   useEffect(() => {
     if (!open) {
@@ -53,14 +53,11 @@ export const AsOfControl = ({ currentDate, value, onChange }: AsOfControlProps) 
 
   return (
     <section className={styles.control}>
-      <span className={styles.label}>As of</span>
-
       <div className={styles.picker} ref={controlRef}>
         <button
           type="button"
           aria-expanded={open}
           aria-haspopup="true"
-          aria-label={`As of ${buttonLabel}`}
           onClick={() => setOpen((isOpen) => !isOpen)}
         >
           {buttonLabel}

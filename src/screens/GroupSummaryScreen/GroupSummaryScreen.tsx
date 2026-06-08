@@ -5,6 +5,7 @@ import { BalanceSummary } from '../../components/BalanceSummary/BalanceSummary'
 import { EntryForm } from '../../components/EntryForm/EntryForm'
 import { EntryShortcutForm } from '../../components/EntryShortcutForm/EntryShortcutForm'
 import { EntryShortcuts } from '../../components/EntryShortcuts/EntryShortcuts'
+import { HeaderWithActions } from '../../components/HeaderWithActions/HeaderWithActions'
 import { InviteMemberForm } from '../../components/InviteMemberForm/InviteMemberForm'
 import { LedgerTable } from '../../components/LedgerTable/LedgerTable'
 import { AddRecurringForm, EditRecurringForm } from '../../components/RecurringForm/RecurringForm'
@@ -26,22 +27,21 @@ export const GroupSummaryScreen = () => {
 
   return (
     <section className={styles.screen} aria-labelledby="group-title">
-      <header className={styles.header}>
-        <div>
-          <h2 id="group-title">{group.name}</h2>
-          <p>{group.members.length} people</p>
-        </div>
-
-        <div className={styles.actions}>
-          <button type="button" onClick={viewModel.openInviteDialog}>Invite</button>
-          <button type="button" onClick={viewModel.openAddEntryDialog}>Add entry</button>
-          <AsOfControl
-            currentDate={viewModel.currentDate}
-            value={viewModel.asOfValue}
-            onChange={viewModel.setAsOfValue}
-          />
-        </div>
-      </header>
+      <HeaderWithActions
+        className={styles.header}
+        header={(
+          <>
+            <h2 id="group-title">{group.name}</h2>
+            <p>{group.members.length} people</p>
+          </>
+        )}
+        actions={(
+          <>
+            <button type="button" onClick={viewModel.openInviteDialog}>Invite</button>
+            <button type="button" onClick={viewModel.openAddEntryDialog}>Add entry</button>
+          </>
+        )}
+      />
 
       <BalanceSummary balanceCents={viewModel.balance.balanceCents} entryCount={viewModel.balance.entryCount} />
 
@@ -59,6 +59,13 @@ export const GroupSummaryScreen = () => {
       />
 
       <LedgerTable
+        actions={(
+          <AsOfControl
+            currentDate={viewModel.currentDate}
+            value={viewModel.asOfValue}
+            onChange={viewModel.setAsOfValue}
+          />
+        )}
         entries={viewModel.entries}
         onDeleteEntry={viewModel.deleteEntry}
       />

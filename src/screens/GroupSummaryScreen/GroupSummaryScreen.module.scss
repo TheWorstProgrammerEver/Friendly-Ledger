@@ -4,10 +4,6 @@
 }
 
 .header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 1rem;
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 1rem;
 
@@ -24,33 +20,5 @@
   p {
     color: var(--color-muted);
     font-weight: 800;
-  }
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  justify-content: end;
-  gap: 0.65rem;
-
-  > button,
-  > section {
-    flex: 0 0 auto;
-  }
-}
-
-@media (max-width: 760px) {
-  .header {
-    grid-template-columns: 1fr;
-  }
-
-  .actions {
-    justify-content: stretch;
-
-    > button,
-    > section {
-      flex: 1 1 100%;
-    }
   }
 }

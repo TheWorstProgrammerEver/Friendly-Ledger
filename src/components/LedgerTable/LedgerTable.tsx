@@ -1,9 +1,12 @@
+import type { ReactNode } from 'react'
+import { HeaderWithActions } from '../HeaderWithActions/HeaderWithActions'
 import { formatMoney } from '../../domain/money'
 import { useConfirmation } from '../../hooks/useConfirmation'
 import type { LedgerEntry } from '../../types'
 import styles from './LedgerTable.module.scss'
 
 type LedgerTableProps = {
+  actions?: ReactNode
   entries: LedgerEntry[]
   onDeleteEntry: (entryId: string) => void
 }
@@ -16,12 +19,15 @@ const createdByLabel = (entry: LedgerEntry) => {
   return entry.createdByName ?? 'Unknown'
 }
 
-export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => {
+export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProps) => {
   const confirmDelete = useConfirmation('Delete this manual entry?')
 
   return (
     <section className={styles.panel} aria-labelledby="entries-title">
-      <h2 id="entries-title">Entries</h2>
+      <HeaderWithActions
+        header={<h2 id="entries-title">Entries</h2>}
+        actions={actions}
+      />
 
       {entries.length > 0 ? (
         <div className={styles.tableWrap}>
