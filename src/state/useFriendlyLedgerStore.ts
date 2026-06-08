@@ -23,6 +23,7 @@ type RecurringInput = {
 
 type EntryShortcutInput = {
   label: string
+  emoji: string
   description: string
   category: string
   effect: 'positive' | 'negative'
@@ -236,6 +237,7 @@ export const useFriendlyLedgerStore = () => {
       id: createId('shortcut'),
       groupId,
       label: input.label.trim() || input.description.trim() || 'Entry shortcut',
+      emoji: input.emoji.trim() || '⚡',
       description: input.description.trim() || input.label.trim() || 'Ledger entry',
       category: input.category.trim() || 'General',
       effect: input.effect,

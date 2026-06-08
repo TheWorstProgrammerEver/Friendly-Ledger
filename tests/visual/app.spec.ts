@@ -96,17 +96,26 @@ test('entry shortcuts prefill common ledger entries', async ({ page }) => {
   await signIn(page)
   await createGroup(page)
 
+  await page.getByRole('link', { name: 'Manage shortcuts' }).click()
+  await expect(page).toHaveURL(/\/groups\/.+\/shortcuts/)
+  await expect(page.getByRole('heading', { name: 'Shortcuts' })).toBeVisible()
   await page.getByRole('button', { name: 'Add shortcut' }).click()
 
-  const shortcut = page.getByRole('dialog', { name: 'Add shortcut' })
-  await shortcut.getByLabel('Button label').fill('Bought groceries')
-  await shortcut.getByLabel('Category').fill('Groceries')
-  await shortcut.getByLabel('Description').fill('Ryan paid for Ronald groceries')
-  await shortcut.getByRole('button', { name: 'Save shortcut' }).click()
+  const addShortcut = page.getByRole('dialog', { name: 'Add shortcut' })
+  await addShortcut.getByLabel('Button label').fill('Bought groceries')
+  await addShortcut.getByLabel('Emoji').fill('🛒')
+  await addShortcut.getByLabel('Category').fill('Groceries')
+  await addShortcut.getByLabel('Description').fill('Ryan paid for Ronald groceries')
+  await addShortcut.getByRole('button', { name: 'Save shortcut' }).click()
+  await expect(page.getByRole('region', { name: 'Manage shortcuts' }).getByText('Bought groceries')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Manage shortcuts' }).getByText('🛒')).toBeVisible()
+  await page.getByRole('link', { name: 'Back to group' }).click()
 
   const shortcuts = page.getByRole('region', { name: 'Shortcuts' })
   const shortcutAction = shortcuts.getByRole('button', { name: 'Bought groceries' })
   await expect(shortcutAction).toBeVisible()
+  await expect(shortcutAction.getByText('🛒')).toBeVisible()
+  await expect(shortcuts.getByRole('button', { name: 'Delete' })).not.toBeVisible()
 
   await shortcutAction.click()
 
@@ -124,6 +133,17 @@ test('entry shortcuts prefill common ledger entries', async ({ page }) => {
   await expect(shortcutEntry.getByLabel('Date')).toHaveValue(toDateInput(new Date()))
   await expect(shortcutEntry.getByLabel('Category')).toHaveValue('Groceries')
   await expect(shortcutEntry.getByLabel('Description')).toHaveValue('Ryan paid for Ronald groceries')
+  await shortcutEntry.getByRole('button', { name: 'Close' }).click()
+
+  await page.getByRole('link', { name: 'Manage shortcuts' }).click()
+  const shortcutList = page.getByRole('region', { name: 'Manage shortcuts' })
+  page.once('dialog', (dialog) => dialog.dismiss())
+  await shortcutList.getByRole('button', { name: 'Delete' }).click()
+  await expect(shortcutList.getByText('Bought groceries')).toBeVisible()
+
+  page.once('dialog', (dialog) => dialog.accept())
+  await shortcutList.getByRole('button', { name: 'Delete' }).click()
+  await expect(shortcutList.getByText('No shortcuts yet')).toBeVisible()
 })
 
 test('recurring rules are implicit ledger entries', async ({ page }) => {

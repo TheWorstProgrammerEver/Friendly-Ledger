@@ -1,10 +1,11 @@
+import { Link } from 'react-router-dom'
 import type { EntryShortcut } from '../../types'
+import { Section } from '../Section/Section'
 import styles from './EntryShortcuts.module.scss'
 
 type EntryShortcutsProps = {
+  manageHref: string
   shortcuts: EntryShortcut[]
-  onAdd: () => void
-  onDelete: (shortcutId: string) => void
   onUse: (shortcutId: string) => void
 }
 
@@ -12,30 +13,29 @@ const byLabel = (left: EntryShortcut, right: EntryShortcut) => (
   left.label.localeCompare(right.label, undefined, { sensitivity: 'base' })
 )
 
-export const EntryShortcuts = ({ shortcuts, onAdd, onDelete, onUse }: EntryShortcutsProps) => {
+export const EntryShortcuts = ({ manageHref, shortcuts, onUse }: EntryShortcutsProps) => {
   const sortedShortcuts = [...shortcuts].sort(byLabel)
 
   return (
-    <section className={styles.panel} aria-labelledby="entry-shortcuts-title">
-      <header>
-        <h2 id="entry-shortcuts-title">Shortcuts</h2>
-        <button type="button" onClick={onAdd}>Add shortcut</button>
-      </header>
-
+    <Section
+      title="Shortcuts"
+      titleId="entry-shortcuts-title"
+      actions={<Link className={styles.manageLink} to={manageHref}>Manage shortcuts</Link>}
+    >
       {sortedShortcuts.length > 0 ? (
-        <ul>
+        <ul className={styles.grid}>
           {sortedShortcuts.map((shortcut) => (
             <li key={shortcut.id}>
-              <button type="button" className={styles.shortcut} onClick={() => onUse(shortcut.id)}>
-                {shortcut.label}
+              <button type="button" className={styles.card} onClick={() => onUse(shortcut.id)}>
+                <span className={styles.icon} aria-hidden="true">{shortcut.emoji ?? '⚡'}</span>
+                <span className={styles.label}>{shortcut.label}</span>
               </button>
-              <button type="button" onClick={() => onDelete(shortcut.id)}>Delete</button>
             </li>
           ))}
         </ul>
       ) : (
         <p>No shortcuts yet</p>
       )}
-    </section>
+    </Section>
   )
 }

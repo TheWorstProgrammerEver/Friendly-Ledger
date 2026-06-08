@@ -3,6 +3,7 @@ import styles from './EntryShortcutForm.module.scss'
 
 export type EntryShortcutFormInput = {
   label: string
+  emoji: string
   description: string
   category: string
   effect: 'positive' | 'negative'
@@ -15,6 +16,7 @@ type EntryShortcutFormProps = {
 
 export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) => {
   const [label, setLabel] = useState('')
+  const [emoji, setEmoji] = useState('⚡')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('General')
   const [effect, setEffect] = useState<'positive' | 'negative'>('positive')
@@ -25,14 +27,20 @@ export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) =>
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
-        onSave({ label, description, category, effect })
+        onSave({ label, emoji, description, category, effect })
         setLabel('')
+        setEmoji('⚡')
         setDescription('')
       }}
     >
       <label>
         Button label
         <input value={label} onChange={(event) => setLabel(event.target.value)} />
+      </label>
+
+      <label>
+        Emoji
+        <input value={emoji} onChange={(event) => setEmoji(event.target.value)} />
       </label>
 
       <label>

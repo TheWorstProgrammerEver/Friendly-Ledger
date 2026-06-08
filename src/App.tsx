@@ -4,6 +4,7 @@ import { LedgerProvider, useLedger } from './state/LedgerContext'
 import { AuthScreen } from './screens/AuthScreen/AuthScreen'
 import { GroupSummaryScreen } from './screens/GroupSummaryScreen/GroupSummaryScreen'
 import { ManageGroupsScreen } from './screens/ManageGroupsScreen/ManageGroupsScreen'
+import { ManageShortcutsScreen } from './screens/ManageShortcutsScreen/ManageShortcutsScreen'
 import { ProfileScreen } from './screens/ProfileScreen/ProfileScreen'
 
 const RequireAuth = () => {
@@ -28,6 +29,7 @@ export const App = () => (
           <Route index element={<StartScreen />} />
           <Route path="groups/manage" element={<ManageGroupsScreen />} />
           <Route path="groups/:groupId" element={<GroupSummaryScreen />} />
+          <Route path="groups/:groupId/shortcuts" element={<ManageShortcutsScreen />} />
           <Route path="profile" element={<ProfileScreen />} />
         </Route>
       </Route>

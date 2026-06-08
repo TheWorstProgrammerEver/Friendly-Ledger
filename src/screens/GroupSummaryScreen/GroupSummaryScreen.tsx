@@ -3,7 +3,6 @@ import { AppDialog, DialogFooterActions } from '../../components/AppDialog/AppDi
 import { AsOfControl } from '../../components/AsOfControl/AsOfControl'
 import { BalanceSummary } from '../../components/BalanceSummary/BalanceSummary'
 import { EntryForm } from '../../components/EntryForm/EntryForm'
-import { EntryShortcutForm } from '../../components/EntryShortcutForm/EntryShortcutForm'
 import { EntryShortcuts } from '../../components/EntryShortcuts/EntryShortcuts'
 import { HeaderWithActions } from '../../components/HeaderWithActions/HeaderWithActions'
 import { InviteMemberForm } from '../../components/InviteMemberForm/InviteMemberForm'
@@ -18,7 +17,6 @@ import styles from './GroupSummaryScreen.module.scss'
 export const GroupSummaryScreen = () => {
   const viewModel = useGroupSummaryScreenViewModel()
   const { group, selectedRecurringItem, selectedShortcut } = viewModel
-  const confirmDeleteShortcut = useConfirmation('Delete this shortcut?')
   const confirmDeleteRecurring = useConfirmation('Delete this recurring rule?')
 
   if (viewModel.shouldRedirect || !group) {
@@ -46,9 +44,8 @@ export const GroupSummaryScreen = () => {
       <BalanceSummary balanceCents={viewModel.balance.balanceCents} />
 
       <EntryShortcuts
+        manageHref={`/groups/${group.id}/shortcuts`}
         shortcuts={viewModel.shortcuts}
-        onAdd={viewModel.openAddShortcutDialog}
-        onDelete={(shortcutId) => confirmDeleteShortcut(() => viewModel.deleteEntryShortcut(shortcutId))}
         onUse={viewModel.openShortcutEntryDialog}
       />
 
@@ -84,22 +81,6 @@ export const GroupSummaryScreen = () => {
           formId={viewModel.entryFormId}
           today={viewModel.asOfDate}
           onAdd={viewModel.addEntry}
-        />
-      </AppDialog>
-
-      <AppDialog
-        open={viewModel.dialog === 'shortcut'}
-        title="Add shortcut"
-        onClose={viewModel.closeDialog}
-        footer={(
-          <DialogFooterActions>
-            <button type="submit" form={viewModel.addShortcutFormId}>Save shortcut</button>
-          </DialogFooterActions>
-        )}
-      >
-        <EntryShortcutForm
-          formId={viewModel.addShortcutFormId}
-          onSave={viewModel.addEntryShortcut}
         />
       </AppDialog>
 

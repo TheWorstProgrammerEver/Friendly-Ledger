@@ -41,6 +41,7 @@ export type EntryShortcut = {
   id: string
   groupId: string
   label: string
+  emoji: string
   description: string
   category: string
   effect: 'positive' | 'negative'

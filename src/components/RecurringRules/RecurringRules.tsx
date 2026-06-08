@@ -1,5 +1,6 @@
 import { formatMoney } from '../../domain/money'
 import type { Group } from '../../types'
+import { Section } from '../Section/Section'
 import styles from './RecurringRules.module.scss'
 
 type RecurringRulesProps = {
@@ -9,14 +10,13 @@ type RecurringRulesProps = {
 }
 
 export const RecurringRules = ({ group, onAdd, onEdit }: RecurringRulesProps) => (
-  <section className={styles.panel} aria-labelledby="recurring-rules-title">
-    <header>
-      <h2 id="recurring-rules-title">Recurring</h2>
-      <button type="button" onClick={onAdd}>Add recurring</button>
-    </header>
-
+  <Section
+    title="Recurring"
+    titleId="recurring-rules-title"
+    actions={<button type="button" onClick={onAdd}>Add recurring</button>}
+  >
     {group.recurringItems.length > 0 ? (
-      <ul>
+      <ul className={styles.list}>
         {group.recurringItems.map((item) => (
           <li key={item.id}>
             <span>
@@ -33,5 +33,5 @@ export const RecurringRules = ({ group, onAdd, onEdit }: RecurringRulesProps) =>
     ) : (
       <p>No recurring rules</p>
     )}
-  </section>
+  </Section>
 )

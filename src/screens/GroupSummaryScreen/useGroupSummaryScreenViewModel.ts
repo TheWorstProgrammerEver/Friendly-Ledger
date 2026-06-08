@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import type { AsOfValue } from '../../components/AsOfControl/AsOfControl'
 import type { EntryFormInitialValue, EntryFormInput } from '../../components/EntryForm/EntryForm'
-import type { EntryShortcutFormInput } from '../../components/EntryShortcutForm/EntryShortcutForm'
 import type { RecurringFormInput } from '../../components/RecurringForm/RecurringForm'
 import { fromLocalIsoDate, todayIso, toLocalIsoDate } from '../../domain/date'
 import { getGroupBalance } from '../../domain/ledger'
@@ -10,7 +9,6 @@ import { getEffectiveLedgerEntries } from '../../domain/recurrence'
 import { useLedger } from '../../state/LedgerContext'
 
 const addRecurringFormId = 'add-recurring-form'
-const addShortcutFormId = 'add-shortcut-form'
 const editRecurringFormId = 'edit-recurring-form'
 const entryFormId = 'entry-form'
 const inviteMemberFormId = 'invite-member-form'
@@ -98,15 +96,6 @@ export const useGroupSummaryScreenViewModel = () => {
     closeDialog()
   }, [closeDialog, group, ledger])
 
-  const addEntryShortcut = useCallback((input: EntryShortcutFormInput) => {
-    if (!group) {
-      return
-    }
-
-    ledger.addEntryShortcutToGroup(group.id, input)
-    closeDialog()
-  }, [closeDialog, group, ledger])
-
   const addRecurringItem = useCallback((input: RecurringFormInput) => {
     if (!group) {
       return
@@ -119,12 +108,6 @@ export const useGroupSummaryScreenViewModel = () => {
   const deleteEntry = useCallback((entryId: string) => {
     if (group) {
       ledger.deleteEntryFromGroup(group.id, entryId)
-    }
-  }, [group, ledger])
-
-  const deleteEntryShortcut = useCallback((shortcutIdToDelete: string) => {
-    if (group) {
-      ledger.deleteEntryShortcutFromGroup(group.id, shortcutIdToDelete)
     }
   }, [group, ledger])
 
@@ -159,10 +142,8 @@ export const useGroupSummaryScreenViewModel = () => {
 
   return {
     addEntry,
-    addEntryShortcut,
     addRecurringItem,
     addRecurringFormId,
-    addShortcutFormId,
     asOfDate,
     asOfValue,
     balance,
@@ -176,7 +157,6 @@ export const useGroupSummaryScreenViewModel = () => {
     group,
     inviteMember,
     currentDate,
-    deleteEntryShortcut,
     inviteMemberFormId,
     shortcutEntryFormId,
     shortcutEntryInitialValue,
@@ -184,7 +164,6 @@ export const useGroupSummaryScreenViewModel = () => {
     shortcuts,
     openAddEntryDialog: () => updateSearchParams({ dialog: 'entry' }),
     openAddRecurringDialog: () => updateSearchParams({ dialog: 'recurring' }),
-    openAddShortcutDialog: () => updateSearchParams({ dialog: 'shortcut' }),
     openInviteDialog: () => updateSearchParams({ dialog: 'invite' }),
     openEditRecurringDialog: (itemId: string) => updateSearchParams({ dialog: 'edit-recurring', recurringId: itemId }),
     openShortcutEntryDialog: (itemId: string) => updateSearchParams({
