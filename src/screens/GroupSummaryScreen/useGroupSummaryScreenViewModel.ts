@@ -62,7 +62,7 @@ export const useGroupSummaryScreenViewModel = () => {
     [asOfDate, group]
   )
   const balance = useMemo(
-    () => group ? getGroupBalance(group, asOfDate) : { balanceCents: 0, entryCount: 0 },
+    () => group ? getGroupBalance(group, asOfDate) : { balanceCents: 0 },
     [asOfDate, group]
   )
 

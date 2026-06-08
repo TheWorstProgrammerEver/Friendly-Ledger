@@ -43,7 +43,7 @@ export const GroupSummaryScreen = () => {
         )}
       />
 
-      <BalanceSummary balanceCents={viewModel.balance.balanceCents} entryCount={viewModel.balance.entryCount} />
+      <BalanceSummary balanceCents={viewModel.balance.balanceCents} />
 
       <EntryShortcuts
         shortcuts={viewModel.shortcuts}

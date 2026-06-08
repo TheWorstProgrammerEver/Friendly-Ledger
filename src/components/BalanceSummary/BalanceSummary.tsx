@@ -3,7 +3,6 @@ import styles from './BalanceSummary.module.scss'
 
 type BalanceSummaryProps = {
   balanceCents: number
-  entryCount: number
 }
 
 const balanceClass = (amountCents: number) => {
@@ -30,18 +29,13 @@ const balanceLabel = (amountCents: number) => {
   return 'Balanced'
 }
 
-export const BalanceSummary = ({ balanceCents, entryCount }: BalanceSummaryProps) => (
+export const BalanceSummary = ({ balanceCents }: BalanceSummaryProps) => (
   <section className={styles.panel} aria-labelledby="balances-title">
     <h2 id="balances-title">Balance</h2>
 
     <div className={styles.balance}>
       <output className={balanceClass(balanceCents)}>{formatMoney(balanceCents)}</output>
       <span>{balanceLabel(balanceCents)}</span>
-    </div>
-
-    <div className={styles.row}>
-      <span>Entries</span>
-      <output>{entryCount}</output>
     </div>
   </section>
 )

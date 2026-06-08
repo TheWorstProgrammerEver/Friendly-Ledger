@@ -19,6 +19,10 @@ const createdByLabel = (entry: LedgerEntry) => {
   return entry.createdByName ?? 'Unknown'
 }
 
+const entryCountLabel = (entryCount: number) => (
+  `${entryCount} ${entryCount === 1 ? 'entry' : 'entries'}`
+)
+
 export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProps) => {
   const confirmDelete = useConfirmation('Delete this manual entry?')
 
@@ -32,6 +36,7 @@ export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProp
       {entries.length > 0 ? (
         <div className={styles.tableWrap}>
           <table>
+            <caption>{entryCountLabel(entries.length)}</caption>
             <thead>
               <tr>
                 <th>Date</th>

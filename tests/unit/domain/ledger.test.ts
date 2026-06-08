@@ -39,15 +39,13 @@ const group: Group = {
 describe('group balance', () => {
   it('sums signed ledger entries', () => {
     expect(getGroupBalance(group)).toEqual({
-      balanceCents: 50000,
-      entryCount: 2
+      balanceCents: 50000
     })
   })
 
   it('only counts manual entries through the provided date', () => {
     expect(getGroupBalance(group, '2026-06-01')).toEqual({
-      balanceCents: 550000,
-      entryCount: 1
+      balanceCents: 550000
     })
   })
 
@@ -71,8 +69,7 @@ describe('group balance', () => {
     }
 
     expect(getGroupBalance(groupWithRent, '2026-06-16')).toEqual({
-      balanceCents: -150000,
-      entryCount: 3
+      balanceCents: -150000
     })
   })
 })
