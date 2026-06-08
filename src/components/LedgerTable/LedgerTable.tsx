@@ -8,6 +8,14 @@ type LedgerTableProps = {
   onDeleteEntry: (entryId: string) => void
 }
 
+const createdByLabel = (entry: LedgerEntry) => {
+  if (entry.source === 'recurring') {
+    return 'Recurring'
+  }
+
+  return entry.createdByName ?? 'Unknown'
+}
+
 export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => {
   const confirmDelete = useConfirmation('Delete this manual entry?')
 
@@ -24,6 +32,7 @@ export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => {
                 <th>Description</th>
                 <th>Category</th>
                 <th>Amount</th>
+                <th>Entered by</th>
                 <th>Source</th>
                 <th>Action</th>
               </tr>
@@ -35,6 +44,7 @@ export const LedgerTable = ({ entries, onDeleteEntry }: LedgerTableProps) => {
                   <td>{entry.description}</td>
                   <td>{entry.category}</td>
                   <td>{formatMoney(entry.amountCents)}</td>
+                  <td>{createdByLabel(entry)}</td>
                   <td>{entry.source}</td>
                   <td>
                     {entry.source === 'manual' ? (

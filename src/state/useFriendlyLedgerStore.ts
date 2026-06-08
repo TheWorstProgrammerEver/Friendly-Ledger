@@ -208,6 +208,8 @@ export const useFriendlyLedgerStore = () => {
       category: input.category.trim() || 'General',
       amountCents: input.amountCents,
       source: 'manual',
+      createdByAccountId: currentAccount?.id,
+      createdByName: currentAccount?.name || currentAccount?.email,
       createdDate: todayIso()
     }
 
@@ -217,7 +219,7 @@ export const useFriendlyLedgerStore = () => {
         ? { ...group, entries: [entry, ...group.entries] }
         : group)
     }))
-  }, [])
+  }, [currentAccount])
 
   const addEntry = useCallback((input: EntryInput) => {
     if (activeGroup) {

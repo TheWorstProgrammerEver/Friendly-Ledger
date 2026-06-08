@@ -61,6 +61,24 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await expect(
     page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: '$45.00' })
   ).toBeVisible()
+  await expect(
+    page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: 'Ryan' })
+  ).toBeVisible()
+
+  const savedEntry = await page.evaluate(() => {
+    const state = JSON.parse(window.localStorage.getItem('friendly-ledger-state-v2') ?? '{}')
+    const group = state.groups.find((candidate: { name: string }) => candidate.name === 'House')
+
+    return {
+      createdByAccountId: group.entries[0].createdByAccountId,
+      createdByName: group.entries[0].createdByName
+    }
+  })
+
+  expect(savedEntry).toEqual({
+    createdByAccountId: expect.stringMatching(/^account_/),
+    createdByName: 'Ryan'
+  })
 
   page.once('dialog', (dialog) => dialog.dismiss())
   await page.getByRole('region', { name: 'Entries' }).getByRole('button', { name: 'Delete' }).click()

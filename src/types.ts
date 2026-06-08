@@ -32,6 +32,8 @@ export type LedgerEntry = {
   amountCents: number
   source: 'manual' | 'recurring'
   recurringItemId?: string
+  createdByAccountId?: string
+  createdByName?: string
   createdDate: string
 }
 
