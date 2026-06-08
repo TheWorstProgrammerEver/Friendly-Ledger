@@ -9,18 +9,33 @@ export type EntryFormInput = {
   amountCents: number
 }
 
+export type EntryFormInitialValue = {
+  date?: string
+  description?: string
+  category?: string
+  effect?: 'positive' | 'negative'
+  amountCents?: number
+}
+
 type EntryFormProps = {
   formId: string
   today: string
+  initialValue?: EntryFormInitialValue
   onAdd: (input: EntryFormInput) => void
 }
 
-export const EntryForm = ({ formId, today, onAdd }: EntryFormProps) => {
-  const [date, setDate] = useState(today)
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('General')
-  const [amount, setAmount] = useState('')
-  const [effect, setEffect] = useState<'positive' | 'negative'>('positive')
+const amountForInput = (amountCents?: number) => (
+  amountCents ? (Math.abs(amountCents) / 100).toString() : ''
+)
+
+export const EntryForm = ({ formId, today, initialValue, onAdd }: EntryFormProps) => {
+  const [date, setDate] = useState(initialValue?.date ?? today)
+  const [description, setDescription] = useState(initialValue?.description ?? '')
+  const [category, setCategory] = useState(initialValue?.category ?? 'General')
+  const [amount, setAmount] = useState(amountForInput(initialValue?.amountCents))
+  const [effect, setEffect] = useState<'positive' | 'negative'>(
+    initialValue?.effect ?? (initialValue?.amountCents && initialValue.amountCents < 0 ? 'negative' : 'positive')
+  )
 
   return (
     <form

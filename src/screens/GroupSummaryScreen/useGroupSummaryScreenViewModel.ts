@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import type { AsOfValue } from '../../components/AsOfControl/AsOfControl'
-import type { EntryFormInput } from '../../components/EntryForm/EntryForm'
+import type { EntryFormInitialValue, EntryFormInput } from '../../components/EntryForm/EntryForm'
+import type { EntryShortcutFormInput } from '../../components/EntryShortcutForm/EntryShortcutForm'
 import type { RecurringFormInput } from '../../components/RecurringForm/RecurringForm'
 import { fromLocalIsoDate, todayIso, toLocalIsoDate } from '../../domain/date'
 import { getGroupBalance } from '../../domain/ledger'
@@ -9,9 +10,11 @@ import { getEffectiveLedgerEntries } from '../../domain/recurrence'
 import { useLedger } from '../../state/LedgerContext'
 
 const addRecurringFormId = 'add-recurring-form'
+const addShortcutFormId = 'add-shortcut-form'
 const editRecurringFormId = 'edit-recurring-form'
 const entryFormId = 'entry-form'
 const inviteMemberFormId = 'invite-member-form'
+const shortcutEntryFormId = 'shortcut-entry-form'
 
 export const useGroupSummaryScreenViewModel = () => {
   const { groupId } = useParams()
@@ -21,11 +24,24 @@ export const useGroupSummaryScreenViewModel = () => {
   const group = ledger.state.groups.find((candidate) => candidate.id === groupId)
   const dialog = searchParams.get('dialog')
   const recurringId = searchParams.get('recurringId')
+  const shortcutId = searchParams.get('shortcutId')
+  const shortcutExpanded = searchParams.get('shortcutExpanded') === 'true'
   const rawAsOfDate = searchParams.get('asOf')
   const currentDate = fromLocalIsoDate(todayIso())
+  const todayDate = toLocalIsoDate(currentDate)
   const asOfValue: AsOfValue = rawAsOfDate ? fromLocalIsoDate(rawAsOfDate.slice(0, 10)) : 'Now'
   const asOfDate = asOfValue === 'Now' ? toLocalIsoDate(currentDate) : toLocalIsoDate(asOfValue)
   const selectedRecurringItem = group?.recurringItems.find((item) => item.id === recurringId)
+  const shortcuts = group?.entryShortcuts ?? []
+  const selectedShortcut = shortcuts.find((shortcut) => shortcut.id === shortcutId)
+  const shortcutEntryInitialValue: EntryFormInitialValue | undefined = selectedShortcut
+    ? {
+      date: todayDate,
+      description: selectedShortcut.description,
+      category: selectedShortcut.category,
+      effect: selectedShortcut.effect
+    }
+    : undefined
 
   useEffect(() => {
     if (groupId) {
@@ -65,7 +81,12 @@ export const useGroupSummaryScreenViewModel = () => {
   }, [searchParams, setSearchParams])
 
   const closeDialog = useCallback(() => {
-    updateSearchParams({ dialog: undefined, recurringId: undefined }, true)
+    updateSearchParams({
+      dialog: undefined,
+      recurringId: undefined,
+      shortcutExpanded: undefined,
+      shortcutId: undefined
+    }, true)
   }, [updateSearchParams])
 
   const addEntry = useCallback((input: EntryFormInput) => {
@@ -74,6 +95,15 @@ export const useGroupSummaryScreenViewModel = () => {
     }
 
     ledger.addEntryToGroup(group.id, input)
+    closeDialog()
+  }, [closeDialog, group, ledger])
+
+  const addEntryShortcut = useCallback((input: EntryShortcutFormInput) => {
+    if (!group) {
+      return
+    }
+
+    ledger.addEntryShortcutToGroup(group.id, input)
     closeDialog()
   }, [closeDialog, group, ledger])
 
@@ -89,6 +119,12 @@ export const useGroupSummaryScreenViewModel = () => {
   const deleteEntry = useCallback((entryId: string) => {
     if (group) {
       ledger.deleteEntryFromGroup(group.id, entryId)
+    }
+  }, [group, ledger])
+
+  const deleteEntryShortcut = useCallback((shortcutIdToDelete: string) => {
+    if (group) {
+      ledger.deleteEntryShortcutFromGroup(group.id, shortcutIdToDelete)
     }
   }, [group, ledger])
 
@@ -123,8 +159,10 @@ export const useGroupSummaryScreenViewModel = () => {
 
   return {
     addEntry,
+    addEntryShortcut,
     addRecurringItem,
     addRecurringFormId,
+    addShortcutFormId,
     asOfDate,
     asOfValue,
     balance,
@@ -138,14 +176,28 @@ export const useGroupSummaryScreenViewModel = () => {
     group,
     inviteMember,
     currentDate,
+    deleteEntryShortcut,
     inviteMemberFormId,
+    shortcutEntryFormId,
+    shortcutEntryInitialValue,
+    shortcutExpanded,
+    shortcuts,
     openAddEntryDialog: () => updateSearchParams({ dialog: 'entry' }),
     openAddRecurringDialog: () => updateSearchParams({ dialog: 'recurring' }),
+    openAddShortcutDialog: () => updateSearchParams({ dialog: 'shortcut' }),
     openInviteDialog: () => updateSearchParams({ dialog: 'invite' }),
     openEditRecurringDialog: (itemId: string) => updateSearchParams({ dialog: 'edit-recurring', recurringId: itemId }),
+    openShortcutEntryDialog: (itemId: string) => updateSearchParams({
+      dialog: 'shortcut-entry',
+      shortcutExpanded: undefined,
+      shortcutId: itemId
+    }),
+    expandShortcutEntryDialog: () => updateSearchParams({ shortcutExpanded: 'true' }),
     selectedRecurringItem,
+    selectedShortcut,
     setAsOfValue,
     shouldRedirect: !groupId || !group || !ledger.currentAccount,
+    todayDate,
     updateSelectedRecurringItem
   }
 }

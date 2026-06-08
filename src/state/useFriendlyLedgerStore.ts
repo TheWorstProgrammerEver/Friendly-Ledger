@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { loadFriendlyLedgerState, saveFriendlyLedgerState } from '../data/localLedgerStore'
 import { todayIso } from '../domain/date'
 import { normalizeEmail, nameFromEmail } from '../domain/people'
-import type { FriendlyLedgerState, LedgerEntry, RecurringFrequency } from '../types'
+import type { EntryShortcut, FriendlyLedgerState, LedgerEntry, RecurringFrequency } from '../types'
 import { createId } from '../utils/id'
 
 type EntryInput = {
@@ -19,6 +19,13 @@ type RecurringInput = {
   frequency: RecurringFrequency
   startDate: string
   endDate?: string
+}
+
+type EntryShortcutInput = {
+  label: string
+  description: string
+  category: string
+  effect: 'positive' | 'negative'
 }
 
 export const useFriendlyLedgerStore = () => {
@@ -104,6 +111,7 @@ export const useFriendlyLedgerStore = () => {
             invitedDate: today
           })),
           entries: [],
+          entryShortcuts: [],
           recurringItems: [],
           createdDate: today
         }
@@ -217,6 +225,35 @@ export const useFriendlyLedgerStore = () => {
     }
   }, [activeGroup, addEntryToGroup])
 
+  const addEntryShortcutToGroup = useCallback((groupId: string, input: EntryShortcutInput) => {
+    if (!groupId) {
+      return
+    }
+
+    const shortcut: EntryShortcut = {
+      id: createId('shortcut'),
+      groupId,
+      label: input.label.trim() || input.description.trim() || 'Entry shortcut',
+      description: input.description.trim() || input.label.trim() || 'Ledger entry',
+      category: input.category.trim() || 'General',
+      effect: input.effect,
+      createdDate: todayIso()
+    }
+
+    setState((currentState) => ({
+      ...currentState,
+      groups: currentState.groups.map((group) => group.id === groupId
+        ? { ...group, entryShortcuts: [shortcut, ...(group.entryShortcuts ?? [])] }
+        : group)
+    }))
+  }, [])
+
+  const addEntryShortcut = useCallback((input: EntryShortcutInput) => {
+    if (activeGroup) {
+      addEntryShortcutToGroup(activeGroup.id, input)
+    }
+  }, [activeGroup, addEntryShortcutToGroup])
+
   const addRecurringItemToGroup = useCallback((groupId: string, input: RecurringInput) => {
     if (!groupId || input.amountCents === 0) {
       return
@@ -304,6 +341,25 @@ export const useFriendlyLedgerStore = () => {
     }
   }, [activeGroup, deleteEntryFromGroup])
 
+  const deleteEntryShortcutFromGroup = useCallback((groupId: string, shortcutId: string) => {
+    if (!groupId) {
+      return
+    }
+
+    setState((currentState) => ({
+      ...currentState,
+      groups: currentState.groups.map((group) => group.id === groupId
+        ? { ...group, entryShortcuts: (group.entryShortcuts ?? []).filter((shortcut) => shortcut.id !== shortcutId) }
+        : group)
+    }))
+  }, [])
+
+  const deleteEntryShortcut = useCallback((shortcutId: string) => {
+    if (activeGroup) {
+      deleteEntryShortcutFromGroup(activeGroup.id, shortcutId)
+    }
+  }, [activeGroup, deleteEntryShortcutFromGroup])
+
   const deleteRecurringItemFromGroup = useCallback((groupId: string, itemId: string) => {
     if (!groupId) {
       return
@@ -328,12 +384,16 @@ export const useFriendlyLedgerStore = () => {
     currentAccount,
     activeGroup,
     addEntry,
+    addEntryShortcut,
+    addEntryShortcutToGroup,
     addEntryToGroup,
     addRecurringItem,
     addRecurringItemToGroup,
     acceptInvitation,
     createGroup,
     deleteEntry,
+    deleteEntryShortcut,
+    deleteEntryShortcutFromGroup,
     deleteEntryFromGroup,
     deleteRecurringItem,
     deleteRecurringItemFromGroup,

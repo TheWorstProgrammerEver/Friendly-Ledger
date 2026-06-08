@@ -35,6 +35,16 @@ export type LedgerEntry = {
   createdDate: string
 }
 
+export type EntryShortcut = {
+  id: string
+  groupId: string
+  label: string
+  description: string
+  category: string
+  effect: 'positive' | 'negative'
+  createdDate: string
+}
+
 export type RecurringFrequency = 'weekly' | 'fortnightly' | 'monthly'
 
 export type RecurringItem = {
@@ -56,6 +66,7 @@ export type Group = {
   members: Member[]
   invitations: Invitation[]
   entries: LedgerEntry[]
+  entryShortcuts?: EntryShortcut[]
   recurringItems: RecurringItem[]
   createdDate: string
 }

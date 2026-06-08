@@ -73,6 +73,40 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('No entries')).toBeVisible()
 })
 
+test('entry shortcuts prefill common ledger entries', async ({ page }) => {
+  await signIn(page)
+  await createGroup(page)
+
+  await page.getByRole('button', { name: 'Add shortcut' }).click()
+
+  const shortcut = page.getByRole('dialog', { name: 'Add shortcut' })
+  await shortcut.getByLabel('Button label').fill('Bought groceries')
+  await shortcut.getByLabel('Category').fill('Groceries')
+  await shortcut.getByLabel('Description').fill('Ryan paid for Ronald groceries')
+  await shortcut.getByRole('button', { name: 'Save shortcut' }).click()
+
+  const shortcuts = page.getByRole('region', { name: 'Shortcuts' })
+  const shortcutAction = shortcuts.getByRole('button', { name: 'Bought groceries' })
+  await expect(shortcutAction).toBeVisible()
+
+  await shortcutAction.click()
+
+  const shortcutEntry = page.getByRole('dialog', { name: 'Bought groceries' })
+  await expect(shortcutEntry.getByLabel('Amount')).toBeVisible()
+  await expect(shortcutEntry.getByLabel('Date')).not.toBeVisible()
+  await shortcutEntry.getByLabel('Amount').fill('28.10')
+  await shortcutEntry.getByRole('button', { name: 'Add entry' }).click()
+
+  await expect(page.getByRole('region', { name: 'Balance' }).getByText('$28.10')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Entries' }).getByText('Ryan paid for Ronald groceries')).toBeVisible()
+
+  await shortcutAction.click()
+  await shortcutEntry.getByRole('button', { name: 'Expand' }).click()
+  await expect(shortcutEntry.getByLabel('Date')).toHaveValue(toDateInput(new Date()))
+  await expect(shortcutEntry.getByLabel('Category')).toHaveValue('Groceries')
+  await expect(shortcutEntry.getByLabel('Description')).toHaveValue('Ryan paid for Ronald groceries')
+})
+
 test('recurring rules are implicit ledger entries', async ({ page }) => {
   await signIn(page)
   await createGroup(page)
