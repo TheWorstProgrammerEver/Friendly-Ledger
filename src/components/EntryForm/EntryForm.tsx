@@ -60,7 +60,15 @@ export const EntryForm = ({ formId, today, initialValue, onAdd }: EntryFormProps
 
       <label>
         Amount
-        <input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <input
+          type="number"
+          inputMode="decimal"
+          min="0.01"
+          step="0.01"
+          required
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+        />
       </label>
 
       <label>
