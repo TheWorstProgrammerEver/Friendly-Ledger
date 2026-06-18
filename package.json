@@ -8,6 +8,7 @@
     "get-going": "node scripts/get-going.mjs",
     "all-done": "node scripts/all-done.mjs",
     "build": "tsc -b && vite build",
+    "build:netlify": "node scripts/build-netlify.mjs",
     "preview": "vite preview",
     "lint": "tsc -b",
     "test": "vitest run",
