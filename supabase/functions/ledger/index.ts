@@ -1,6 +1,6 @@
 import { createDispatcher, type IRequest } from '../../../lib/dispatch/dispatch.ts'
+import { withSupabase } from 'npm:@supabase/server@^1'
 import { HttpError, errorMessage } from './helpers.ts'
-import { corsHeaders, createUserClient, jsonResponse, requireUser } from './http.ts'
 import { createLedgerRequestHandlers } from './handlers/index.ts'
 
 type LedgerFunctionRequest = {
@@ -21,31 +21,30 @@ const parseLedgerRequest = async (request: Request): Promise<IRequest<unknown, u
   }
 }
 
-Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders(request) })
-  }
-
-  if (request.method !== 'POST') {
-    return jsonResponse(request, { error: 'Method not allowed' }, 405)
-  }
-
-  try {
-    const authorization = request.headers.get('authorization')
-
-    if (!authorization) {
-      throw new HttpError(401, 'Sign in before using the ledger.')
+export default {
+  fetch: withSupabase({ auth: 'user' }, async (request, context) => {
+    if (request.method !== 'POST') {
+      return Response.json({ error: 'Method not allowed' }, { status: 405 })
     }
 
-    const client = createUserClient(authorization)
-    const user = await requireUser(client)
-    const dispatcher = createDispatcher(createLedgerRequestHandlers({ client, user }))
-    const ledgerRequest = await parseLedgerRequest(request)
+    try {
+      const { data, error } = await context.supabase.auth.getUser()
 
-    return jsonResponse(request, await dispatcher.dispatch(ledgerRequest))
-  } catch (error) {
-    const status = error instanceof HttpError ? error.status : 400
+      if (error || !data.user) {
+        throw new HttpError(401, 'Sign in before using the ledger.')
+      }
 
-    return jsonResponse(request, { error: errorMessage(error) }, status)
-  }
-})
+      const dispatcher = createDispatcher(createLedgerRequestHandlers({
+        client: context.supabase,
+        user: data.user
+      }))
+      const ledgerRequest = await parseLedgerRequest(request)
+
+      return Response.json(await dispatcher.dispatch(ledgerRequest))
+    } catch (error) {
+      const status = error instanceof HttpError ? error.status : 400
+
+      return Response.json({ error: errorMessage(error) }, { status })
+    }
+  })
+}

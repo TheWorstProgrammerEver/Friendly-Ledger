@@ -130,7 +130,8 @@ export const signUpWithPassword = async ({ email, name, password }: SignUpCreden
     options: {
       data: {
         display_name: displayName
-      }
+      },
+      emailRedirectTo: window.location.origin
     }
   })
 

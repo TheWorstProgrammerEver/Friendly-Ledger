@@ -384,6 +384,11 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/ledger-health/index.ts"
 
+[functions.ledger]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/ledger/index.ts"
+
 [analytics]
 enabled = true
 port = 54327
