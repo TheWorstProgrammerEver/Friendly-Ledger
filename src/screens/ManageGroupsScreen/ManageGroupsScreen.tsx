@@ -1,7 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { AppDialog, DialogFooterActions } from '../../components/AppDialog/AppDialog'
+import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
+import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
 import { GroupCreator } from '../../components/GroupCreator/GroupCreator'
 import { InvitationPanel } from '../../components/InvitationPanel/InvitationPanel'
+import { List, ListItem } from '../../../lib/ui/List/List'
+import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
 import { useManageGroupsScreenViewModel } from './useManageGroupsScreenViewModel'
 import styles from './ManageGroupsScreen.module.scss'
 
@@ -19,21 +22,27 @@ export const ManageGroupsScreen = () => {
 
       <section className={styles.groups} aria-labelledby="groups-title">
         <h3 id="groups-title">Groups</h3>
-        {viewModel.groups.length > 0 ? (
-          <ul>
-            {viewModel.groups.map((group) => (
-              <li key={group.id}>
-                <span>
-                  <strong>{group.name}</strong>
-                  <small>{group.members.length} people</small>
-                </span>
-                <NavLink to={`/groups/${group.id}`}>Open</NavLink>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No groups yet</p>
-        )}
+        <LoaderContainer loader={viewModel.ledgerLoad} loadingLabel="Loading groups...">
+          {viewModel.groups.length > 0 && (
+            <List ariaLabel="Groups">
+              {viewModel.groups.map((group) => (
+                <ListItem
+                  key={group.id}
+                  details={(
+                    <>
+                      <strong>{group.name}</strong>
+                      <small>{group.members.length} people</small>
+                    </>
+                  )}
+                  actions={<NavLink to={`/groups/${group.id}`}>Open</NavLink>}
+                />
+              ))}
+            </List>
+          )}
+          {viewModel.groups.length === 0 && viewModel.ledgerLoad.settled && (
+            <p>No groups yet</p>
+          )}
+        </LoaderContainer>
       </section>
 
       <AppDialog
@@ -42,7 +51,13 @@ export const ManageGroupsScreen = () => {
         onClose={viewModel.closeCreateGroup}
         footer={(
           <DialogFooterActions>
-            <button type="submit" form={viewModel.createGroupFormId}>Create group</button>
+            <AsynchronousSubmitButton
+              form={viewModel.createGroupFormId}
+              loader={viewModel.createGroupLoader}
+              statusLabel="Creating group..."
+            >
+              Create group
+            </AsynchronousSubmitButton>
           </DialogFooterActions>
         )}
       >

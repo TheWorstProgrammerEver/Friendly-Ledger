@@ -1,4 +1,4 @@
-import type { Group } from '../types'
+import type { Group } from '../types/ledger'
 import { getEffectiveLedgerEntries } from './recurrence'
 
 export type GroupBalance = {

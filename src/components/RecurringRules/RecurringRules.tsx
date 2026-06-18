@@ -1,6 +1,6 @@
 import { formatMoney } from '../../domain/money'
-import type { Group } from '../../types'
-import { Section } from '../Section/Section'
+import type { Group } from '../../types/ledger'
+import { Section } from '../../../lib/ui/Section/Section'
 import styles from './RecurringRules.module.scss'
 
 type RecurringRulesProps = {

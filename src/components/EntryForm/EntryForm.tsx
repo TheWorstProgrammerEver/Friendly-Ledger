@@ -21,11 +21,11 @@ type EntryFormProps = {
   formId: string
   today: string
   initialValue?: EntryFormInitialValue
-  onAdd: (input: EntryFormInput) => void
+  onAdd: (input: EntryFormInput) => void | Promise<void>
 }
 
 const amountForInput = (amountCents?: number) => (
-  amountCents ? (Math.abs(amountCents) / 100).toString() : ''
+  amountCents ? (Math.abs(amountCents) / 100).toFixed(2) : ''
 )
 
 export const EntryForm = ({ formId, today, initialValue, onAdd }: EntryFormProps) => {
@@ -43,14 +43,12 @@ export const EntryForm = ({ formId, today, initialValue, onAdd }: EntryFormProps
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
-        onAdd({
+        void onAdd({
           date,
           description,
           category,
           amountCents: parseMoneyToCents(amount) * (effect === 'negative' ? -1 : 1)
         })
-        setDescription('')
-        setAmount('')
       }}
     >
       <label>

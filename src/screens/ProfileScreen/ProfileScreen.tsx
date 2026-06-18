@@ -21,7 +21,7 @@ export const ProfileScreen = () => {
         </div>
       </dl>
 
-      <button type="button" onClick={viewModel.signOut}>Log out</button>
+      <button type="button" onClick={() => void viewModel.signOut()}>Log out</button>
     </section>
   )
 }

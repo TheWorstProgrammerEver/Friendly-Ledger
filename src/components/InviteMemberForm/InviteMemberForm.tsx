@@ -3,7 +3,7 @@ import styles from './InviteMemberForm.module.scss'
 
 type InviteMemberFormProps = {
   formId: string
-  onInvite: (email: string) => void
+  onInvite: (email: string) => void | Promise<void>
 }
 
 export const InviteMemberForm = ({ formId, onInvite }: InviteMemberFormProps) => {
@@ -12,8 +12,7 @@ export const InviteMemberForm = ({ formId, onInvite }: InviteMemberFormProps) =>
   return (
     <form id={formId} className={styles.form} onSubmit={(event) => {
       event.preventDefault()
-      onInvite(email)
-      setEmail('')
+      void onInvite(email)
     }}>
       <label>
         Invite

@@ -1,0 +1,12 @@
+grant usage on schema public to service_role;
+grant usage on type public.group_member_status to service_role;
+grant usage on type public.invitation_status to service_role;
+grant usage on type public.entry_shortcut_effect to service_role;
+grant usage on type public.recurring_frequency to service_role;
+grant select, insert, update, delete on public.profiles to service_role;
+grant select, insert, update, delete on public.groups to service_role;
+grant select, insert, update, delete on public.group_members to service_role;
+grant select, insert, update, delete on public.group_invitations to service_role;
+grant select, insert, update, delete on public.ledger_entries to service_role;
+grant select, insert, update, delete on public.entry_shortcuts to service_role;
+grant select, insert, update, delete on public.recurring_items to service_role;

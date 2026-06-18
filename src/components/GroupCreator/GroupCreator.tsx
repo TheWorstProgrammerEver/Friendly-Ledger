@@ -3,7 +3,7 @@ import styles from './GroupCreator.module.scss'
 
 type GroupCreatorProps = {
   formId: string
-  onCreateGroup: (name: string, inviteEmails: string[]) => void
+  onCreateGroup: (name: string, inviteEmails: string[]) => void | Promise<void>
 }
 
 const splitEmails = (value: string) => value
@@ -21,9 +21,7 @@ export const GroupCreator = ({ formId, onCreateGroup }: GroupCreatorProps) => {
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
-        onCreateGroup(name, splitEmails(inviteEmails))
-        setName('')
-        setInviteEmails('')
+        void onCreateGroup(name, splitEmails(inviteEmails))
       }}
     >
       <label>

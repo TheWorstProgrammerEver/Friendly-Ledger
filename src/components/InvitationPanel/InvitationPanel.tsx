@@ -1,4 +1,4 @@
-import type { LedgerViewModel } from '../../state/useLedgerViewModel'
+import type { LedgerViewModel } from '../../stores/friendlyLedgerStore/useLedgerViewModel'
 import styles from './InvitationPanel.module.scss'
 
 type InvitationPanelProps = {
@@ -18,9 +18,14 @@ export const InvitationPanel = ({ viewModel }: InvitationPanelProps) => {
         {viewModel.pendingInvitations.map((invitation) => (
           <li key={invitation.id}>
             <span>{invitation.groupName}</span>
-            <button type="button" onClick={() => viewModel.acceptInvitation(invitation.id)}>
-              Accept
-            </button>
+            <div className={styles.actions}>
+              <button type="button" onClick={() => viewModel.acceptInvitation(invitation.id)}>
+                Accept
+              </button>
+              <button type="button" onClick={() => viewModel.rejectInvitation(invitation.id)}>
+                Reject
+              </button>
+            </div>
           </li>
         ))}
       </ul>

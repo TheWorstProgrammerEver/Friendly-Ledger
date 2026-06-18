@@ -1,4 +1,4 @@
-import type { Group, LedgerEntry, RecurringItem } from '../types'
+import type { Group, LedgerEntry, RecurringItem } from '../types/ledger'
 import { advanceDate } from './date'
 
 const getLastOccurrenceDate = (item: RecurringItem, throughDate: string) => {

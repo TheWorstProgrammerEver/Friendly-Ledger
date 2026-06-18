@@ -63,7 +63,7 @@ export const AsOfControl = ({ currentDate, value, onChange }: AsOfControlProps) 
           {buttonLabel}
         </button>
 
-        {open ? (
+        {open && (
           <div className={styles.menu}>
             <label className={styles.checkbox}>
               <input
@@ -85,7 +85,7 @@ export const AsOfControl = ({ currentDate, value, onChange }: AsOfControlProps) 
               />
             </label>
           </div>
-        ) : null}
+        )}
       </div>
     </section>
   )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { parseMoneyToCents } from '../../domain/money'
 import styles from './EntryShortcutForm.module.scss'
 
 export type EntryShortcutFormInput = {
@@ -7,11 +8,12 @@ export type EntryShortcutFormInput = {
   description: string
   category: string
   effect: 'positive' | 'negative'
+  defaultAmountCents?: number
 }
 
 type EntryShortcutFormProps = {
   formId: string
-  onSave: (input: EntryShortcutFormInput) => void
+  onSave: (input: EntryShortcutFormInput) => void | Promise<void>
 }
 
 export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) => {
@@ -20,6 +22,7 @@ export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) =>
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('General')
   const [effect, setEffect] = useState<'positive' | 'negative'>('positive')
+  const [defaultAmount, setDefaultAmount] = useState('')
 
   return (
     <form
@@ -27,10 +30,14 @@ export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) =>
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
-        onSave({ label, emoji, description, category, effect })
-        setLabel('')
-        setEmoji('⚡')
-        setDescription('')
+        void onSave({
+          label,
+          emoji,
+          description,
+          category,
+          effect,
+          defaultAmountCents: defaultAmount ? parseMoneyToCents(defaultAmount) : undefined
+        })
       }}
     >
       <label>
@@ -54,6 +61,18 @@ export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) =>
       <label>
         Category
         <input list="friendly-ledger-categories" value={category} onChange={(event) => setCategory(event.target.value)} />
+      </label>
+
+      <label>
+        Default amount
+        <input
+          type="number"
+          inputMode="decimal"
+          min="0.01"
+          step="0.01"
+          value={defaultAmount}
+          onChange={(event) => setDefaultAmount(event.target.value)}
+        />
       </label>
 
       <label>

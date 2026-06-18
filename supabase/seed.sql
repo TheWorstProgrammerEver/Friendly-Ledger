@@ -1,0 +1,2 @@
+-- Seed data intentionally starts empty.
+-- Local browser state remains the source of truth until the app is wired to Supabase.

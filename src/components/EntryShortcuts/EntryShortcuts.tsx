@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import type { EntryShortcut } from '../../types'
-import { Section } from '../Section/Section'
+import type { EntryShortcut } from '../../types/ledger'
+import { Section } from '../../../lib/ui/Section/Section'
 import styles from './EntryShortcuts.module.scss'
 
 type EntryShortcutsProps = {

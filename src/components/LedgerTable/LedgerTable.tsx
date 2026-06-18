@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
-import { HeaderWithActions } from '../HeaderWithActions/HeaderWithActions'
+import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { formatMoney } from '../../domain/money'
-import { useConfirmation } from '../../hooks/useConfirmation'
-import type { LedgerEntry } from '../../types'
+import { useConfirmation } from '../../../lib/hooks/useConfirmation'
+import type { LedgerEntry } from '../../types/ledger'
 import styles from './LedgerTable.module.scss'
 
 type LedgerTableProps = {

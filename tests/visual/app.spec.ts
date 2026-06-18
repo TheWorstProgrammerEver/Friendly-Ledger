@@ -1,4 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
+import { routeRuntimeConfig } from './runtimeConfig'
+import { deleteSupabaseUsersByEmail, getSupabaseAdminClient } from './supabaseTestAuth'
+
+const createdUserEmails = new Set<string>()
 
 const pad = (value: number) => value.toString().padStart(2, '0')
 
@@ -13,40 +17,194 @@ const addDays = (date: Date, days: number) => {
   return nextDate
 }
 
-const signIn = async (page: Page) => {
+const delay = (milliseconds: number) => new Promise((resolve) => {
+  setTimeout(resolve, milliseconds)
+})
+
+type SignInOptions = {
+  email?: string
+  name?: string
+}
+
+const signIn = async (page: Page, options: SignInOptions = {}) => {
+  const email = options.email ?? `ryan+${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
+  const name = options.name ?? 'Ryan'
+  createdUserEmails.add(email)
+
   await page.goto('/')
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
 
   await expect(page.getByRole('heading', { name: 'Friendly Ledger' })).toBeVisible()
-  await page.getByLabel('Email').fill('ryan@example.com')
-  await expect(page.getByLabel('Name')).toBeVisible()
-  await page.getByLabel('Name').fill('Ryan')
-  await page.getByLabel('Password').fill('noop')
+  await page.getByLabel('Email', { exact: true }).fill(email)
+  await expect(page.getByLabel('Name', { exact: true })).toBeVisible()
+  await page.getByLabel('Name', { exact: true }).fill(name)
+  await page.getByLabel('Password', { exact: true }).fill('password')
   await page.getByRole('button', { name: 'Create account' }).click()
+
+  return { email }
 }
 
-const createGroup = async (page: Page) => {
+const loadGroupSnapshot = async (email: string, name: string) => {
+  const admin = getSupabaseAdminClient()
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .single<{ id: string }>()
+
+  if (profileError) {
+    throw profileError
+  }
+
+  const { data: group, error: groupError } = await admin
+    .from('groups')
+    .select('id')
+    .eq('created_by_profile_id', profile.id)
+    .eq('name', name)
+    .single<{ id: string }>()
+
+  if (groupError) {
+    throw groupError
+  }
+
+  const [{ data: entries, error: entriesError }, { data: recurringItems, error: recurringError }] = await Promise.all([
+    admin
+      .from('ledger_entries')
+      .select('id, created_by_profile_id, created_by_name')
+      .eq('group_id', group.id),
+    admin
+      .from('recurring_items')
+      .select('id, amount_cents, start_date')
+      .eq('group_id', group.id)
+  ])
+
+  if (entriesError) {
+    throw entriesError
+  }
+
+  if (recurringError) {
+    throw recurringError
+  }
+
+  return {
+    entries: entries ?? [],
+    recurringItems: recurringItems ?? []
+  }
+}
+
+const loadInvitationSnapshot = async (groupPath: string, email: string) => {
+  const admin = getSupabaseAdminClient()
+  const groupId = groupPath.split('/').at(-1)
+
+  if (!groupId) {
+    throw new Error(`Could not read group id from ${groupPath}`)
+  }
+
+  const [{ data: invitations, error: invitationError }, { data: members, error: memberError }] = await Promise.all([
+    admin
+      .from('group_invitations')
+      .select('id')
+      .eq('group_id', groupId)
+      .eq('email', email),
+    admin
+      .from('group_members')
+      .select('id')
+      .eq('group_id', groupId)
+      .eq('email', email)
+  ])
+
+  if (invitationError) {
+    throw invitationError
+  }
+
+  if (memberError) {
+    throw memberError
+  }
+
+  return {
+    invitations: invitations ?? [],
+    members: members ?? []
+  }
+}
+
+test.beforeEach(async ({ page }) => {
+  await routeRuntimeConfig(page)
+})
+
+test.afterEach(async () => {
+  const emails = Array.from(createdUserEmails)
+  createdUserEmails.clear()
+  await deleteSupabaseUsersByEmail(emails)
+})
+
+test('renders configured authentication methods', async ({ page }) => {
+  await page.goto('/sign-in')
+
+  await expect(page.getByRole('radio', { name: 'Email + password' })).toBeChecked()
+  await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
+
+  await page.getByRole('radio', { name: 'One-time code' }).check()
+  await expect(page.getByLabel('Password', { exact: true })).not.toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
+
+  await page.getByRole('radio', { name: 'Magic link' }).check()
+  await expect(page.getByRole('button', { name: 'Send magic link' })).toBeVisible()
+})
+
+type CreateGroupOptions = {
+  inviteEmails?: string
+  name?: string
+}
+
+const createGroup = async (page: Page, options: CreateGroupOptions = {}) => {
+  const inviteEmails = options.inviteEmails ?? 'sam@example.com'
+  const name = options.name ?? 'House'
+
   await expect(page.getByRole('heading', { name: 'Manage Groups' })).toBeVisible()
   await page.getByRole('button', { name: 'Create group' }).click()
 
   const createGroupDialog = page.getByRole('dialog', { name: 'Create group' })
-  await createGroupDialog.getByLabel('Group name').fill('House')
-  await createGroupDialog.getByLabel('Invite emails').fill('sam@example.com')
+  await createGroupDialog.getByLabel('Group name').fill(name)
+  await createGroupDialog.getByLabel('Invite emails').fill(inviteEmails)
   await createGroupDialog.getByRole('button', { name: 'Create group' }).click()
-  await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
+  await expect(page.getByRole('heading', { name })).toBeVisible()
+
+  return new URL(page.url()).pathname
 }
 
 test('creates a group and records a ledger entry', async ({ page }) => {
-  await signIn(page)
+  const account = await signIn(page)
   await createGroup(page)
+  let delayedInviteRequest = false
+
+  await page.route('**/functions/v1/ledger', async (route) => {
+    const body = route.request().postDataJSON() as { identifier?: string }
+
+    if (!delayedInviteRequest && body.identifier === 'inviteMember') {
+      delayedInviteRequest = true
+      await delay(500)
+    }
+
+    await route.continue()
+  })
 
   await page.getByRole('button', { name: 'Invite' }).click()
 
   const inviteMember = page.getByRole('dialog', { name: 'Invite member' })
-  await inviteMember.getByLabel('Invite').fill('alex@example.com')
-  await inviteMember.getByRole('button', { name: 'Invite' }).click()
+  const inviteEmail = inviteMember.getByLabel('Invite')
+  const inviteButton = inviteMember.getByRole('button', { name: 'Invite' })
+
+  await inviteEmail.fill('alex@example.com')
+  await inviteButton.click()
+  await expect(inviteEmail).toHaveValue('alex@example.com')
+  await expect(inviteButton).toBeDisabled()
+  await expect(inviteButton).toHaveAttribute('aria-busy', 'true')
   await expect(page.getByText('3 people')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Invite' }).click()
+  await expect(page.getByRole('dialog', { name: 'Invite member' }).getByLabel('Invite')).toHaveValue('')
+  await page.getByRole('dialog', { name: 'Invite member' }).getByRole('button', { name: 'Close' }).click()
 
   await page.getByRole('button', { name: 'Add entry' }).click()
 
@@ -66,19 +224,13 @@ test('creates a group and records a ledger entry', async ({ page }) => {
     page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: 'Ryan' })
   ).toBeVisible()
 
-  const savedEntry = await page.evaluate(() => {
-    const state = JSON.parse(window.localStorage.getItem('friendly-ledger-state-v2') ?? '{}')
-    const group = state.groups.find((candidate: { name: string }) => candidate.name === 'House')
-
-    return {
-      createdByAccountId: group.entries[0].createdByAccountId,
-      createdByName: group.entries[0].createdByName
-    }
-  })
+  const savedState = await loadGroupSnapshot(account.email, 'House')
+  const savedEntry = savedState.entries[0]
 
   expect(savedEntry).toEqual({
-    createdByAccountId: expect.stringMatching(/^account_/),
-    createdByName: 'Ryan'
+    created_by_profile_id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+    created_by_name: 'Ryan',
+    id: expect.stringMatching(/^[0-9a-f-]{36}$/)
   })
 
   page.once('dialog', (dialog) => dialog.dismiss())
@@ -92,9 +244,135 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('No entries')).toBeVisible()
 })
 
+test('loads a direct group URL after the app reloads', async ({ page }) => {
+  await signIn(page)
+  const groupPath = await createGroup(page)
+
+  await page.goto(groupPath)
+
+  await expect(page).toHaveURL(new RegExp(`${groupPath}$`))
+  await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
+})
+
+test('returns to a direct group URL after signing in', async ({ page }) => {
+  const account = await signIn(page)
+  const groupPath = await createGroup(page)
+
+  await page.goto('/profile')
+  await page.getByRole('button', { name: 'Log out' }).click()
+  await expect(page).toHaveURL(/\/sign-in$/)
+  await expect(page.getByRole('heading', { name: 'Friendly Ledger' })).toBeVisible()
+
+  await page.goto(groupPath)
+  await expect(page).toHaveURL(/\/sign-in$/)
+
+  await page.getByLabel('Email', { exact: true }).fill(account.email)
+  await page.getByLabel('Password', { exact: true }).fill('password')
+  await page.getByRole('button', { name: 'Sign in' }).click()
+
+  await expect(page).toHaveURL(new RegExp(`${groupPath}$`))
+  await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
+})
+
+test('accepted invitees load existing group data', async ({ page }) => {
+  const inviteeEmail = `invitee+${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
+
+  await signIn(page, { name: 'User A' })
+  await createGroup(page, { inviteEmails: '' })
+
+  await page.getByRole('button', { name: 'Add entry' }).click()
+  const entryDialog = page.getByRole('dialog', { name: 'Add entry' })
+  await entryDialog.getByLabel('Amount').fill('45')
+  await entryDialog.getByLabel('Description').fill('Groceries')
+  await entryDialog.getByRole('button', { name: 'Add entry' }).click()
+  await expect(page.getByRole('region', { name: 'Entries' }).getByText('Groceries')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Add recurring' }).click()
+  const recurringDialog = page.getByRole('dialog', { name: 'Add recurring' })
+  await recurringDialog.getByLabel('Title').fill('Weekly rent')
+  await recurringDialog.getByLabel('Amount').fill('500')
+  await recurringDialog.getByLabel('Start date').fill(toDateInput(new Date()))
+  await recurringDialog.getByRole('button', { name: 'Save recurring' }).click()
+  await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
+
+  await page.getByRole('link', { name: 'Manage shortcuts' }).click()
+  await page.getByRole('button', { name: 'Add shortcut' }).click()
+  const shortcutDialog = page.getByRole('dialog', { name: 'Add shortcut' })
+  await shortcutDialog.getByLabel('Button label').fill('Paid Netflix')
+  await shortcutDialog.getByLabel('Category').fill('Entertainment')
+  await shortcutDialog.getByLabel('Default amount').fill('22.99')
+  await shortcutDialog.getByLabel('Description').fill('User A paid Netflix')
+  await shortcutDialog.getByRole('button', { name: 'Save shortcut' }).click()
+  await expect(page.getByRole('region', { name: 'Manage shortcuts' }).getByText('Paid Netflix')).toBeVisible()
+  await page.getByRole('link', { name: 'Back to group' }).click()
+
+  await page.getByRole('button', { name: 'Invite' }).click()
+  const inviteDialog = page.getByRole('dialog', { name: 'Invite member' })
+  await inviteDialog.getByLabel('Invite').fill(inviteeEmail)
+  await inviteDialog.getByRole('button', { name: 'Invite' }).click()
+  await expect(page.getByText('2 people')).toBeVisible()
+
+  await page.goto('/profile')
+  await page.getByRole('button', { name: 'Log out' }).click()
+  await expect(page).toHaveURL(/\/sign-in$/)
+
+  await signIn(page, { email: inviteeEmail, name: 'User B' })
+  await expect(page.getByRole('button', { name: /navigation/i })).toBeVisible()
+  await page.goto('/groups/manage')
+  await expect(page.getByRole('region', { name: 'Invitations' }).getByText('House')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Groups' }).getByText('No groups yet')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open' })).not.toBeVisible()
+
+  await page.getByRole('button', { name: 'Accept' }).click()
+  await page.getByRole('link', { name: 'Open' }).click()
+
+  await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
+  await expect(page.getByText('2 people')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Entries' }).getByText('Groceries')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Shortcuts' }).getByRole('button', { name: 'Paid Netflix' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
+})
+
+test('rejected invitations are consumed without granting group access', async ({ page }) => {
+  const inviteeEmail = `rejectee+${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
+
+  await signIn(page, { name: 'User A' })
+  const groupPath = await createGroup(page, { inviteEmails: inviteeEmail })
+
+  await page.goto('/profile')
+  await page.getByRole('button', { name: 'Log out' }).click()
+  await expect(page).toHaveURL(/\/sign-in$/)
+
+  await signIn(page, { email: inviteeEmail, name: 'User B' })
+  await expect(page.getByRole('button', { name: /navigation/i })).toBeVisible()
+  await page.goto('/groups/manage')
+  await expect(page.getByRole('region', { name: 'Invitations' }).getByText('House')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Reject' }).click()
+
+  await expect(page.getByRole('region', { name: 'Invitations' })).not.toBeVisible()
+  await expect(page.getByRole('region', { name: 'Groups' }).getByText('No groups yet')).toBeVisible()
+  const invitationSnapshot = await loadInvitationSnapshot(groupPath, inviteeEmail)
+
+  expect(invitationSnapshot.invitations).toEqual([])
+  expect(invitationSnapshot.members).toEqual([])
+})
+
 test('entry shortcuts prefill common ledger entries', async ({ page }) => {
   await signIn(page)
   await createGroup(page)
+  let delayedShortcutRequest = false
+
+  await page.route('**/functions/v1/ledger', async (route) => {
+    const body = route.request().postDataJSON() as { identifier?: string }
+
+    if (!delayedShortcutRequest && body.identifier === 'addEntryShortcut') {
+      delayedShortcutRequest = true
+      await delay(500)
+    }
+
+    await route.continue()
+  })
 
   await page.getByRole('link', { name: 'Manage shortcuts' }).click()
   await expect(page).toHaveURL(/\/groups\/.+\/shortcuts/)
@@ -105,10 +383,17 @@ test('entry shortcuts prefill common ledger entries', async ({ page }) => {
   await addShortcut.getByLabel('Button label').fill('Bought groceries')
   await addShortcut.getByLabel('Emoji').fill('🛒')
   await addShortcut.getByLabel('Category').fill('Groceries')
+  await addShortcut.getByLabel('Default amount').fill('28.10')
   await addShortcut.getByLabel('Description').fill('Ryan paid for Ronald groceries')
-  await addShortcut.getByRole('button', { name: 'Save shortcut' }).click()
+  const saveShortcut = addShortcut.getByRole('button', { name: 'Save shortcut' })
+
+  await saveShortcut.click()
+  await expect(addShortcut.getByLabel('Button label')).toHaveValue('Bought groceries')
+  await expect(saveShortcut).toBeDisabled()
+  await expect(saveShortcut).toHaveAttribute('aria-busy', 'true')
   await expect(page.getByRole('region', { name: 'Manage shortcuts' }).getByText('Bought groceries')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Manage shortcuts' }).getByText('🛒')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Manage shortcuts' }).getByText('$28.10')).toBeVisible()
   await page.getByRole('link', { name: 'Back to group' }).click()
 
   const shortcuts = page.getByRole('region', { name: 'Shortcuts' })
@@ -121,9 +406,10 @@ test('entry shortcuts prefill common ledger entries', async ({ page }) => {
 
   const shortcutEntry = page.getByRole('dialog', { name: 'Bought groceries' })
   await expect(shortcutEntry.getByLabel('Amount')).toBeVisible()
+  await expect(shortcutEntry.getByLabel('Amount')).toBeFocused()
+  await expect(shortcutEntry.getByLabel('Amount')).toHaveValue('28.10')
   await expect(shortcutEntry.getByLabel('Date')).not.toBeVisible()
-  await shortcutEntry.getByLabel('Amount').fill('28.10')
-  await shortcutEntry.getByRole('button', { name: 'Add entry' }).click()
+  await page.keyboard.press('Enter')
 
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('$28.10')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Ryan paid for Ronald groceries')).toBeVisible()
@@ -131,6 +417,7 @@ test('entry shortcuts prefill common ledger entries', async ({ page }) => {
   await shortcutAction.click()
   await shortcutEntry.getByRole('button', { name: 'Expand' }).click()
   await expect(shortcutEntry.getByLabel('Date')).toHaveValue(toDateInput(new Date()))
+  await expect(shortcutEntry.getByLabel('Amount')).toHaveValue('28.10')
   await expect(shortcutEntry.getByLabel('Category')).toHaveValue('Groceries')
   await expect(shortcutEntry.getByLabel('Description')).toHaveValue('Ryan paid for Ronald groceries')
   await shortcutEntry.getByRole('button', { name: 'Close' }).click()
@@ -147,7 +434,7 @@ test('entry shortcuts prefill common ledger entries', async ({ page }) => {
 })
 
 test('recurring rules are implicit ledger entries', async ({ page }) => {
-  await signIn(page)
+  const account = await signIn(page)
   await createGroup(page)
 
   const today = toDateInput(new Date())
@@ -160,18 +447,6 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
   await recurring.getByLabel('Start date').fill(today)
   await recurring.getByRole('button', { name: 'Save recurring' }).click()
 
-  const savedStateAfterAdd = await page.evaluate(() => {
-    const state = JSON.parse(window.localStorage.getItem('friendly-ledger-state-v2') ?? '{}')
-    const group = state.groups.find((candidate: { name: string }) => candidate.name === 'House')
-
-    return {
-      entryCount: group.entries.length,
-      recurringCount: group.recurringItems.length,
-      recurringAmountCents: group.recurringItems[0].amountCents,
-      recurringStartDate: group.recurringItems[0].startDate
-    }
-  })
-
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Implicit')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Weekly rent')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('1 entry')).toBeVisible()
@@ -180,12 +455,15 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
   await expect(page.getByRole('button', { name: `As of ${futureDate}` })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('-$1,500.00')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('3 entries')).toBeVisible()
-  expect(savedStateAfterAdd).toEqual({
-    entryCount: 0,
-    recurringCount: 1,
-    recurringAmountCents: -50000,
-    recurringStartDate: today
-  })
+
+  const savedStateAfterAdd = await loadGroupSnapshot(account.email, 'House')
+
+  expect(savedStateAfterAdd.entries).toHaveLength(0)
+  expect(savedStateAfterAdd.recurringItems).toEqual([{
+    amount_cents: -50000,
+    id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+    start_date: today
+  }])
 
   await page.getByRole('button', { name: 'Edit' }).click()
 
@@ -196,20 +474,9 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
 
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('-$1,800.00')).toBeVisible()
 
-  const savedStateAfterEdit = await page.evaluate(() => {
-    const state = JSON.parse(window.localStorage.getItem('friendly-ledger-state-v2') ?? '{}')
-    const group = state.groups.find((candidate: { name: string }) => candidate.name === 'House')
+  const savedStateAfterEdit = await loadGroupSnapshot(account.email, 'House')
 
-    return {
-      recurringCount: group.recurringItems.length,
-      recurringAmountCents: group.recurringItems[0].amountCents
-    }
-  })
-
-  expect(savedStateAfterEdit).toEqual({
-    recurringCount: 1,
-    recurringAmountCents: -60000
-  })
+  expect(savedStateAfterEdit.recurringItems).toMatchObject([{ amount_cents: -60000 }])
 
   await page.getByRole('button', { name: 'Edit' }).click()
   page.once('dialog', (dialog) => dialog.dismiss())

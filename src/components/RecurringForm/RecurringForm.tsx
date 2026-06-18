@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { parseMoneyToCents } from '../../domain/money'
-import type { RecurringFrequency, RecurringItem } from '../../types'
+import type { RecurringFrequency, RecurringItem } from '../../types/ledger'
 import styles from './RecurringForm.module.scss'
 
 export type RecurringFormInput = {
@@ -16,19 +16,19 @@ type RecurringEditorProps = {
   formId: string
   initialValue?: RecurringItem
   today: string
-  onSave: (input: RecurringFormInput) => void
+  onSave: (input: RecurringFormInput) => void | Promise<void>
 }
 
 type AddRecurringFormProps = {
   formId: string
   today: string
-  onSave: (input: RecurringFormInput) => void
+  onSave: (input: RecurringFormInput) => void | Promise<void>
 }
 
 type EditRecurringFormProps = {
   formId: string
   item: RecurringItem
-  onSave: (input: RecurringFormInput) => void
+  onSave: (input: RecurringFormInput) => void | Promise<void>
 }
 
 const amountForInput = (amountCents: number) => (
@@ -57,7 +57,7 @@ const RecurringEditor = ({
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
-        onSave({
+        void onSave({
           category,
           amountCents: parseMoneyToCents(amount) * (effect === 'negative' ? -1 : 1),
           title,

@@ -1,10 +1,33 @@
-import { useLedger } from '../../state/LedgerContext'
+import { getSupportedAuthenticationTypes } from '../../domain/auth'
+import { useAuthContext } from '../../contexts/AuthContext'
 
 export const useAuthScreenViewModel = () => {
-  const { currentAccount, signIn } = useLedger()
+  const {
+    authBusy,
+    authError,
+    authNotice,
+    authReady,
+    clearAuthStatus,
+    currentAccount,
+    requestOtp,
+    sendMagicLink,
+    signIn,
+    signUp,
+    verifyOtp
+  } = useAuthContext()
 
   return {
+    authBusy,
+    authError,
+    authNotice,
+    authReady,
+    clearAuthStatus,
+    requestOtp,
+    sendMagicLink,
     signIn,
-    signedIn: Boolean(currentAccount)
+    signUp,
+    signedIn: Boolean(currentAccount),
+    supportedTypes: getSupportedAuthenticationTypes(),
+    verifyOtp
   }
 }

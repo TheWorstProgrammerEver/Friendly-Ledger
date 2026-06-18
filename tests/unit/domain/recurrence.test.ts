@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getEffectiveLedgerEntries, getRecurringDates } from '../../../src/domain/recurrence'
-import type { Group, RecurringItem } from '../../../src/types'
+import type { Group, RecurringItem } from '../../../src/types/ledger'
 
 const item: RecurringItem = {
   id: 'recurring_1',

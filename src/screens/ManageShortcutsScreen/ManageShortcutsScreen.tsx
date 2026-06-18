@@ -1,9 +1,12 @@
 import { Link, Navigate } from 'react-router-dom'
-import { AppDialog, DialogFooterActions } from '../../components/AppDialog/AppDialog'
+import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
+import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
 import { EntryShortcutForm } from '../../components/EntryShortcutForm/EntryShortcutForm'
-import { HeaderWithActions } from '../../components/HeaderWithActions/HeaderWithActions'
-import { Section } from '../../components/Section/Section'
-import { useConfirmation } from '../../hooks/useConfirmation'
+import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
+import { List, ListItem } from '../../../lib/ui/List/List'
+import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
+import { formatMoney } from '../../domain/money'
+import { useConfirmation } from '../../../lib/hooks/useConfirmation'
 import { useManageShortcutsScreenViewModel } from './useManageShortcutsScreenViewModel'
 import styles from './ManageShortcutsScreen.module.scss'
 
@@ -11,8 +14,16 @@ export const ManageShortcutsScreen = () => {
   const viewModel = useManageShortcutsScreenViewModel()
   const confirmDeleteShortcut = useConfirmation('Delete this shortcut?')
 
-  if (viewModel.shouldRedirect || !viewModel.group) {
+  if (viewModel.shouldRedirect) {
     return <Navigate to="/groups/manage" replace />
+  }
+
+  if (!viewModel.group) {
+    return (
+      <LoaderContainer loader={viewModel.ledgerLoad} loadingLabel="Loading ledger...">
+        <section className={styles.screen} aria-label="Loading shortcuts" />
+      </LoaderContainer>
+    )
   }
 
   return (
@@ -32,31 +43,37 @@ export const ManageShortcutsScreen = () => {
         )}
       />
 
-      <Section ariaLabel="Manage shortcuts">
+      <section aria-label="Manage shortcuts">
         {viewModel.shortcuts.length > 0 ? (
-          <ul className={styles.list}>
+          <List>
             {viewModel.shortcuts.map((shortcut) => (
-              <li key={shortcut.id}>
-                <span className={styles.emoji} aria-hidden="true">{shortcut.emoji ?? '⚡'}</span>
-                <span className={styles.details}>
-                  <strong>{shortcut.label}</strong>
-                  <small>
-                    {shortcut.effect === 'positive' ? 'Positive' : 'Negative'} / {shortcut.category}
-                  </small>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => confirmDeleteShortcut(() => viewModel.deleteShortcut(shortcut.id))}
-                >
-                  Delete
-                </button>
-              </li>
+              <ListItem
+                key={shortcut.id}
+                leading={<span className={styles.emoji} aria-hidden="true">{shortcut.emoji ?? '⚡'}</span>}
+                details={(
+                  <>
+                    <strong>{shortcut.label}</strong>
+                    <small>
+                      {shortcut.effect === 'positive' ? 'Positive' : 'Negative'} / {shortcut.category}
+                      {shortcut.defaultAmountCents ? ` / ${formatMoney(shortcut.defaultAmountCents)}` : ''}
+                    </small>
+                  </>
+                )}
+                actions={(
+                  <button
+                    type="button"
+                    onClick={() => confirmDeleteShortcut(() => viewModel.deleteShortcut(shortcut.id))}
+                  >
+                    Delete
+                  </button>
+                )}
+              />
             ))}
-          </ul>
+          </List>
         ) : (
           <p>No shortcuts yet</p>
         )}
-      </Section>
+      </section>
 
       <AppDialog
         open={viewModel.dialog === 'shortcut'}
@@ -64,7 +81,13 @@ export const ManageShortcutsScreen = () => {
         onClose={viewModel.closeDialog}
         footer={(
           <DialogFooterActions>
-            <button type="submit" form={viewModel.shortcutFormId}>Save shortcut</button>
+            <AsynchronousSubmitButton
+              form={viewModel.shortcutFormId}
+              loader={viewModel.addShortcutLoader}
+              statusLabel="Saving shortcut..."
+            >
+              Save shortcut
+            </AsynchronousSubmitButton>
           </DialogFooterActions>
         )}
       >

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getGroupBalance } from '../../../src/domain/ledger'
-import type { Group } from '../../../src/types'
+import type { Group } from '../../../src/types/ledger'
 
 const group: Group = {
   id: 'group_1',
