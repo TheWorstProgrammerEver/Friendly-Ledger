@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "lint": "tsc -b",
     "test": "vitest run",
+    "test:security": "vitest run --config vitest.security.config.ts",
     "test:visual": "playwright test",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",

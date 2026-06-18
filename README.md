@@ -27,3 +27,15 @@ Press `Ctrl+C` to stop dev processes started by the script. Supabase containers 
 - the substituted `#{CONFIG_FILE}#` path when present
 
 `public/config.json` is the committed deployment template and should be substituted by CI/CD. `npm run get-going` generates ignored `public/config.local.json` for the current machine/LAN. Visual tests keep their config under `tests/visual/config.test.json` and route it as `/config.local.json`.
+
+## Security Integration Tests
+
+The security integration suite runs against the local Supabase stack and exercises both Edge Function access and direct publishable-key table access:
+
+```sh
+npm run get-going
+npm run test:security
+npm run all-done
+```
+
+The tests create isolated local auth users and ledger rows, then clean them up with the local service-role key.
