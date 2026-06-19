@@ -1,21 +1,21 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { AppFrame as AppFrameLayout } from '../../../lib/ui/AppFrame/AppFrame'
+import { AppFrame } from '../../../lib/ui/AppFrame/AppFrame'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useLedgerContext } from '../../contexts/LedgerContext'
-import styles from './AppFrame.module.scss'
+import styles from './FriendlyLedgerFrame.module.scss'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) => (
   isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
 )
 
-export const AppFrame = () => {
+export const FriendlyLedgerFrame = () => {
   const { currentAccount, signOut } = useAuthContext()
   const { ledgerLoad, state } = useLedgerContext()
 
   return (
     <>
-      <AppFrameLayout
+      <AppFrame
         environment={window.config?.environment ?? 'local'}
         appName={window.config?.appName ?? 'Friendly Ledger'}
         accountMenu={(
@@ -56,7 +56,7 @@ export const AppFrame = () => {
         )}
       >
         <Outlet />
-      </AppFrameLayout>
+      </AppFrame>
 
       <datalist id="friendly-ledger-categories">
         <option value="Rent" />

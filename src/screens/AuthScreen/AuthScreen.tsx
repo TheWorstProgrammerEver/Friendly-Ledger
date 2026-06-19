@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { AuthPanel } from '../../components/AuthPanel/AuthPanel'
+import { AuthPanel } from '../../../lib/ui/AuthPanel/AuthPanel'
 import { useAuthScreenViewModel } from './useAuthScreenViewModel'
 import styles from './AuthScreen.module.scss'
 
@@ -29,7 +29,9 @@ export const AuthScreen = () => {
   return (
     <main className={styles.screen}>
       <AuthPanel
+        appName={window.config?.appName ?? 'Friendly Ledger'}
         busy={viewModel.authBusy}
+        environment={window.config?.environment ?? 'local'}
         error={viewModel.authError}
         notice={viewModel.authNotice}
         onCreateAccount={viewModel.signUp}

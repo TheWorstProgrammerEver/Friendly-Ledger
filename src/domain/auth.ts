@@ -1,14 +1,21 @@
-export type AuthenticationType = 'emailPassword' | 'magicLink' | 'otp'
+import {
+  getDefaultAuthenticationType,
+  getEnabledAuthenticationTypes,
+  type SupportedAuthenticationTypes
+} from '../../lib/auth/authenticationTypes'
 
-export type SupportedAuthenticationTypes = Record<AuthenticationType, boolean>
+export {
+  getDefaultAuthenticationType,
+  getEnabledAuthenticationTypes,
+  type AuthenticationType,
+  type SupportedAuthenticationTypes
+} from '../../lib/auth/authenticationTypes'
 
 const defaultSupportedAuthenticationTypes: SupportedAuthenticationTypes = {
   emailPassword: true,
   magicLink: false,
   otp: false
 }
-
-const authTypeOrder: AuthenticationType[] = ['emailPassword', 'otp', 'magicLink']
 
 export const getSupportedAuthenticationTypes = (): SupportedAuthenticationTypes => {
   const configured = typeof window === 'undefined'
@@ -19,17 +26,9 @@ export const getSupportedAuthenticationTypes = (): SupportedAuthenticationTypes 
     ...configured
   }
 
-  if (authTypeOrder.some((type) => supportedTypes[type])) {
+  if (getEnabledAuthenticationTypes(supportedTypes).length > 0) {
     return supportedTypes
   }
 
   return defaultSupportedAuthenticationTypes
 }
-
-export const getEnabledAuthenticationTypes = (supportedTypes: SupportedAuthenticationTypes) => (
-  authTypeOrder.filter((type) => supportedTypes[type])
-)
-
-export const getDefaultAuthenticationType = (supportedTypes: SupportedAuthenticationTypes) => (
-  getEnabledAuthenticationTypes(supportedTypes)[0] ?? 'emailPassword'
-)

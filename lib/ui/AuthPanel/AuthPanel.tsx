@@ -1,14 +1,16 @@
-import { useRef, useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 import {
   getDefaultAuthenticationType,
   getEnabledAuthenticationTypes,
   type AuthenticationType,
   type SupportedAuthenticationTypes
-} from '../../domain/auth'
+} from '../../auth/authenticationTypes'
 import styles from './AuthPanel.module.scss'
 
 type AuthPanelProps = {
+  appName: ReactNode
   busy?: boolean
+  environment: ReactNode
   error?: string
   notice?: string
   onCreateAccount: (email: string, name: string, password: string) => void | Promise<void>
@@ -27,7 +29,9 @@ const authTypeLabel: Record<AuthenticationType, string> = {
 }
 
 export const AuthPanel = ({
+  appName,
   busy = false,
+  environment,
   error,
   notice,
   onCreateAccount,
@@ -88,8 +92,8 @@ export const AuthPanel = ({
   return (
     <section className={styles.panel} aria-labelledby="auth-title">
       <header>
-        <p>{window.config?.environment ?? 'local'}</p>
-        <h1 id="auth-title">{window.config?.appName ?? 'Friendly Ledger'}</h1>
+        <p>{environment}</p>
+        <h1 id="auth-title">{appName}</h1>
       </header>
 
       <form ref={formRef} onSubmit={(event) => {

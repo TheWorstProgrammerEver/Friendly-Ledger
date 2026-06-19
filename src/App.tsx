@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { AppFrame } from './components/AppFrame/AppFrame'
+import { FriendlyLedgerFrame } from './components/FriendlyLedgerFrame/FriendlyLedgerFrame'
 import { useLedgerContext } from './contexts/LedgerContext'
 import { LedgerRouteScope } from './routing/LedgerRouteScope'
 import { RequireAuth } from './routing/RequireAuth'
@@ -23,7 +23,7 @@ export const App = () => (
       <Route path="/sign-in" element={<AuthScreen />} />
       <Route element={<RequireAuth />}>
         <Route element={<LedgerRouteScope />}>
-          <Route element={<AppFrame />}>
+          <Route element={<FriendlyLedgerFrame />}>
             <Route index element={<StartScreen />} />
             <Route path="groups/manage" element={<ManageGroupsScreen />} />
             <Route path="groups/:groupId" element={<GroupSummaryScreen />} />
