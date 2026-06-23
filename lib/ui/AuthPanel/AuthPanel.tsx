@@ -17,6 +17,7 @@ type AuthPanelProps = {
   onMagicLink: (email: string, name: string) => void | Promise<void>
   onOtpRequest: (email: string, name: string) => void | Promise<void>
   onOtpVerify: (email: string, name: string, token: string) => void | Promise<void>
+  onPasskeySignIn: () => void | Promise<void>
   onSignIn: (email: string, password: string) => void | Promise<void>
   onStatusClear: () => void
   supportedTypes: SupportedAuthenticationTypes
@@ -25,7 +26,8 @@ type AuthPanelProps = {
 const authTypeLabel: Record<AuthenticationType, string> = {
   emailPassword: 'Email + password',
   magicLink: 'Magic link',
-  otp: 'One-time code'
+  otp: 'One-time code',
+  passkey: 'Passkey'
 }
 
 export const AuthPanel = ({
@@ -38,6 +40,7 @@ export const AuthPanel = ({
   onMagicLink,
   onOtpRequest,
   onOtpVerify,
+  onPasskeySignIn,
   onSignIn,
   onStatusClear,
   supportedTypes
@@ -64,6 +67,11 @@ export const AuthPanel = ({
     }
 
     onStatusClear()
+
+    if (selectedType === 'passkey') {
+      void onPasskeySignIn()
+      return
+    }
 
     if (selectedType === 'emailPassword' && intent === 'create') {
       void onCreateAccount(email, name, password)
@@ -118,26 +126,30 @@ export const AuthPanel = ({
           </fieldset>
         )}
 
-        <label>
-          Email
-          <input
-            autoComplete="email"
-            inputMode="email"
-            required
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </label>
+        {selectedType !== 'passkey' && (
+          <>
+            <label>
+              Email
+              <input
+                autoComplete="email"
+                inputMode="email"
+                required
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
 
-        <label>
-          Name
-          <input
-            autoComplete="name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </label>
+            <label>
+              Name
+              <input
+                autoComplete="name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </label>
+          </>
+        )}
 
         {selectedType === 'emailPassword' && (
           <label>
@@ -188,6 +200,10 @@ export const AuthPanel = ({
 
           {selectedType === 'magicLink' && (
             <button type="submit" disabled={busy}>Send magic link</button>
+          )}
+
+          {selectedType === 'passkey' && (
+            <button type="submit" disabled={busy}>Sign in with passkey</button>
           )}
         </div>
       </form>

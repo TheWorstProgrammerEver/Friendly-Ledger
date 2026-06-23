@@ -28,6 +28,8 @@ Press `Ctrl+C` to stop dev processes started by the script. Supabase containers 
 
 `public/config.json` is the committed deployment template and should be substituted by CI/CD. `npm run get-going` generates ignored `public/config.local.json` for the current machine/LAN. Visual tests keep their config under `tests/visual/config.test.json` and route it as `/config.local.json`.
 
+Passkey auth is enabled for local Supabase with `localhost` as the WebAuthn relying party. Test passkeys at `http://localhost:5173`; LAN HTTP origins such as `http://192.168.*:5173` are not valid WebAuthn origins.
+
 ## Security Integration Tests
 
 The security integration suite runs against the local Supabase stack and exercises both Edge Function access and direct publishable-key table access:

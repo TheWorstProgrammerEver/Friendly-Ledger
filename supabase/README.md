@@ -70,6 +70,7 @@ The React bundle should continue using runtime config rather than Vite build-tim
 - `#{ENVIRONMENT}#`
 - `#{BUILD_VERSION}#`
 - `#{AUTH_EMAIL_PASSWORD_ENABLED}#`
+- `#{AUTH_PASSKEY_ENABLED}#`
 - `#{AUTH_OTP_ENABLED}#`
 - `#{AUTH_MAGIC_LINK_ENABLED}#`
 - optionally `#{CONFIG_FILE}#` in `public/config.js` if a deploy needs to load a non-default JSON config path

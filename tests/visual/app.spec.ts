@@ -144,8 +144,13 @@ test('renders configured authentication methods', async ({ page }) => {
   await expect(page.getByRole('radio', { name: 'Email + password' })).toBeChecked()
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
 
+  await page.getByRole('radio', { name: 'Passkey' }).check()
+  await expect(page.getByLabel('Email', { exact: true })).not.toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign in with passkey' })).toBeVisible()
+
   await page.getByRole('radio', { name: 'One-time code' }).check()
   await expect(page.getByLabel('Password', { exact: true })).not.toBeVisible()
+  await expect(page.getByLabel('Email', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
 
   await page.getByRole('radio', { name: 'Magic link' }).check()
