@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { nameFromEmail } from '../../src/domain/people'
 import { routeRuntimeConfig } from './runtimeConfig'
 import { deleteSupabaseUsersByEmail, getSupabaseAdminClient } from './supabaseTestAuth'
 
@@ -26,23 +27,30 @@ type SignInOptions = {
   name?: string
 }
 
+const uniqueTestEmail = (name: string) => {
+  const localPart = name.trim().toLowerCase().split(/\s+/).filter(Boolean).join('.') || 'user'
+  const uniqueDomain = `visual-${Date.now()}-${Math.random().toString(36).slice(2)}.example.com`
+
+  return `${localPart}@${uniqueDomain}`
+}
+
 const signIn = async (page: Page, options: SignInOptions = {}) => {
-  const email = options.email ?? `ryan+${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
-  const name = options.name ?? 'Ryan'
+  const email = options.email ?? uniqueTestEmail(options.name ?? 'Ryan')
+  const name = nameFromEmail(email)
   createdUserEmails.add(email)
 
   await page.goto('/')
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
 
-  await expect(page.getByRole('heading', { name: 'Friendly Ledger' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible()
+  await page.getByRole('button', { name: 'Create an account' }).click()
   await page.getByLabel('Email', { exact: true }).fill(email)
-  await expect(page.getByLabel('Name', { exact: true })).toBeVisible()
-  await page.getByLabel('Name', { exact: true }).fill(name)
+  await expect(page.getByLabel('Name', { exact: true })).not.toBeVisible()
   await page.getByLabel('Password', { exact: true }).fill('password')
   await page.getByRole('button', { name: 'Create account' }).click()
 
-  return { email }
+  return { email, name }
 }
 
 const loadGroupSnapshot = async (email: string, name: string) => {
@@ -141,20 +149,37 @@ test.afterEach(async () => {
 test('renders configured authentication methods', async ({ page }) => {
   await page.goto('/sign-in')
 
-  await expect(page.getByRole('radio', { name: 'Email + password' })).toBeChecked()
+  await expect(page.getByRole('button', { name: 'Sign in with passkey' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Password/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Magic link/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /One-time code/ })).toBeVisible()
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
 
-  await page.getByRole('radio', { name: 'Passkey' }).check()
-  await expect(page.getByLabel('Email', { exact: true })).not.toBeVisible()
-  await expect(page.getByRole('button', { name: 'Sign in with passkey' })).toBeVisible()
-
-  await page.getByRole('radio', { name: 'One-time code' }).check()
+  await page.getByRole('button', { name: /One-time code/ }).click()
   await expect(page.getByLabel('Password', { exact: true })).not.toBeVisible()
-  await expect(page.getByLabel('Email', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Name', { exact: true })).not.toBeVisible()
   await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
 
-  await page.getByRole('radio', { name: 'Magic link' }).check()
+  await page.getByRole('button', { name: /Magic link/ }).click()
+  await expect(page.getByLabel('Password', { exact: true })).not.toBeVisible()
+  await expect(page.getByLabel('Name', { exact: true })).not.toBeVisible()
   await expect(page.getByRole('button', { name: 'Send magic link' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Create an account' }).click()
+  await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Password/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Magic link/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /One-time code/ })).toBeVisible()
+
+  await page.getByRole('button', { name: /One-time code/ }).click()
+  await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
+
+  await page.getByRole('button', { name: /Magic link/ }).click()
+  await expect(page.getByRole('button', { name: 'Send magic link' })).toBeVisible()
+
+  await page.getByRole('button', { name: /Password/ }).click()
+  await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible()
+  await expect(page.getByLabel('Name', { exact: true })).not.toBeVisible()
 })
 
 type CreateGroupOptions = {
@@ -226,7 +251,7 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   ).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('1 entry')).toBeVisible()
   await expect(
-    page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: 'Ryan' })
+    page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: account.name })
   ).toBeVisible()
 
   const savedState = await loadGroupSnapshot(account.email, 'House')
@@ -234,7 +259,7 @@ test('creates a group and records a ledger entry', async ({ page }) => {
 
   expect(savedEntry).toEqual({
     created_by_profile_id: expect.stringMatching(/^[0-9a-f-]{36}$/),
-    created_by_name: 'Ryan',
+    created_by_name: account.name,
     id: expect.stringMatching(/^[0-9a-f-]{36}$/)
   })
 
@@ -266,7 +291,7 @@ test('returns to a direct group URL after signing in', async ({ page }) => {
   await page.goto('/profile')
   await page.getByRole('button', { name: 'Log out' }).click()
   await expect(page).toHaveURL(/\/sign-in$/)
-  await expect(page.getByRole('heading', { name: 'Friendly Ledger' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible()
 
   await page.goto(groupPath)
   await expect(page).toHaveURL(/\/sign-in$/)
