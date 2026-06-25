@@ -2,14 +2,16 @@ import { ArrowRight, Plus } from 'lucide-react'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
 import { ActionLink } from '../../../lib/ui/Button/ActionLink'
-import { Button } from '../../../lib/ui/Button/Button'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { GroupCreator } from '../../components/GroupCreator/GroupCreator'
 import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { InvitationPanel } from '../../components/InvitationPanel/InvitationPanel'
 import { List, ListItem } from '../../../lib/ui/List/List'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
+import { IconAndLabel, IconOnly } from '../../../lib/ui/ResponsiveContent/IconContent'
 import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
+import { Screen } from '../../components/Screen/Screen'
 import { useManageGroupsScreenViewModel } from './useManageGroupsScreenViewModel'
 import styles from './ManageGroupsScreen.module.scss'
 
@@ -17,14 +19,17 @@ export const ManageGroupsScreen = () => {
   const viewModel = useManageGroupsScreenViewModel()
 
   return (
-    <section className={styles.screen} aria-labelledby="manage-groups-title">
+    <Screen className={styles.content} aria-labelledby="manage-groups-title">
       <HeaderWithActions
         header={<h2 id="manage-groups-title">Manage Groups</h2>}
         actions={(
           <ComponentRoleContext role="primary">
-            <Button type="button" onClick={viewModel.openCreateGroup}>
-              <ResponsiveContent icon={<Plus />}>Create group</ResponsiveContent>
-            </Button>
+            <ResponsiveButton
+              type="button"
+              icon={<Plus />}
+              label="Create group"
+              onClick={viewModel.openCreateGroup}
+            />
           </ComponentRoleContext>
         )}
       />
@@ -48,7 +53,14 @@ export const ManageGroupsScreen = () => {
                   actions={(
                     <ComponentRoleContext role="tertiary">
                       <ActionLink to={`/groups/${group.id}`}>
-                        <ResponsiveContent icon={<ArrowRight />}>Open</ResponsiveContent>
+                        <ResponsiveContent
+                          compact={<IconOnly icon={<ArrowRight />} label={`Open ${group.name}`} />}
+                          nonCompact={(
+                            <IconAndLabel icon={<ArrowRight />} label={`Open ${group.name}`}>
+                              Open
+                            </IconAndLabel>
+                          )}
+                        />
                       </ActionLink>
                     </ComponentRoleContext>
                   )}
@@ -82,6 +94,6 @@ export const ManageGroupsScreen = () => {
       >
         <GroupCreator formId={viewModel.createGroupFormId} onCreateGroup={viewModel.createGroup} />
       </AppDialog>
-    </section>
+    </Screen>
   )
 }

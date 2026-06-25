@@ -1,9 +1,11 @@
-import { LogOut } from 'lucide-react'
+import { CircleUserRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { AppFrame } from '../../../lib/ui/AppFrame/AppFrame'
-import { Button } from '../../../lib/ui/Button/Button'
+import { ActionLink } from '../../../lib/ui/Button/ActionLink'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
+import { IconAndLabel, IconOnly } from '../../../lib/ui/ResponsiveContent/IconContent'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useLedgerContext } from '../../contexts/LedgerContext'
 import styles from './FriendlyLedgerFrame.module.scss'
@@ -13,8 +15,9 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) => (
 )
 
 export const FriendlyLedgerFrame = () => {
-  const { currentAccount, signOut } = useAuthContext()
+  const { currentAccount } = useAuthContext()
   const { ledgerLoad, state } = useLedgerContext()
+  const accountEmail = currentAccount?.email ?? 'Profile'
 
   return (
     <>
@@ -22,18 +25,18 @@ export const FriendlyLedgerFrame = () => {
         environment={window.config?.environment ?? 'local'}
         appName={window.config?.appName ?? 'Friendly Ledger'}
         accountMenu={(
-          <details>
-            <summary>{currentAccount?.email}</summary>
-            <div>
-              <NavLink to="/profile">Profile</NavLink>
-              <ComponentRoleContext role="tertiary">
-                <Button type="button" onClick={() => void signOut()}>
-                  <LogOut aria-hidden="true" />
-                  Log out
-                </Button>
-              </ComponentRoleContext>
-            </div>
-          </details>
+          <ComponentRoleContext role="secondary">
+            <ActionLink className={styles.profileLink} to="/profile">
+              <ResponsiveContent
+                compact={<IconOnly icon={<CircleUserRound />} label={`Open profile for ${accountEmail}`} />}
+                nonCompact={(
+                  <IconAndLabel icon={<CircleUserRound />} label={`Open profile for ${accountEmail}`}>
+                    {accountEmail}
+                  </IconAndLabel>
+                )}
+              />
+            </ActionLink>
+          </ComponentRoleContext>
         )}
         navigation={(
           <nav className={styles.nav}>

@@ -1,7 +1,6 @@
 import { CalendarDays } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Button } from '../../../lib/ui/Button/Button'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
 import { fromLocalIsoDate, toLocalIsoDate } from '../../domain/date'
 import styles from './AsOfControl.module.scss'
 
@@ -57,14 +56,14 @@ export const AsOfControl = ({ currentDate, value, onChange }: AsOfControlProps) 
   return (
     <section className={styles.control}>
       <div className={styles.picker} ref={controlRef}>
-        <Button
+        <ResponsiveButton
           type="button"
           aria-expanded={open}
           aria-haspopup="true"
+          icon={<CalendarDays />}
+          label={buttonLabel}
           onClick={() => setOpen((isOpen) => !isOpen)}
-        >
-          <ResponsiveContent icon={<CalendarDays />}>{buttonLabel}</ResponsiveContent>
-        </Button>
+        />
 
         {open && (
           <div className={styles.menu} role="group" aria-label="As of options">

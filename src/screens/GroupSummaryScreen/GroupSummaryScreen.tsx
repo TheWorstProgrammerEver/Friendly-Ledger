@@ -1,4 +1,4 @@
-import { Maximize2, Plus, Trash2, UserPlus } from 'lucide-react'
+import { Maximize2, Plus, Rows2, Rows3, UserPlus } from 'lucide-react'
 import { Navigate } from 'react-router-dom'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
@@ -12,18 +12,16 @@ import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithA
 import { InviteMemberForm } from '../../components/InviteMemberForm/InviteMemberForm'
 import { LedgerTable } from '../../components/LedgerTable/LedgerTable'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
-import { AddRecurringForm, EditRecurringForm } from '../../components/RecurringForm/RecurringForm'
 import { RecurringRules } from '../../components/RecurringRules/RecurringRules'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
+import { Screen } from '../../components/Screen/Screen'
 import { ShortcutEntryForm } from '../../components/ShortcutEntryForm/ShortcutEntryForm'
-import { useConfirmation } from '../../../lib/hooks/useConfirmation'
 import { useGroupSummaryScreenViewModel } from './useGroupSummaryScreenViewModel'
 import styles from './GroupSummaryScreen.module.scss'
 
 export const GroupSummaryScreen = () => {
   const viewModel = useGroupSummaryScreenViewModel()
-  const { group, selectedRecurringItem, selectedShortcut } = viewModel
-  const confirmDeleteRecurring = useConfirmation('Delete this recurring rule?')
+  const { group, selectedShortcut } = viewModel
 
   if (viewModel.shouldRedirect) {
     return <Navigate to="/groups/manage" replace />
@@ -32,14 +30,14 @@ export const GroupSummaryScreen = () => {
   if (!group) {
     return (
       <LoaderContainer loader={viewModel.ledgerLoad} loadingLabel="Loading ledger...">
-        <section className={styles.screen} aria-label="Loading group" />
+        <Screen aria-label="Loading group" />
       </LoaderContainer>
     )
   }
 
   return (
     <LoaderContainer loader={viewModel.ledgerLoad} loadingLabel="Loading ledger...">
-      <section className={styles.screen} aria-labelledby="group-title">
+      <Screen aria-labelledby="group-title">
         <HeaderWithActions
           className={styles.header}
           header={(
@@ -50,13 +48,30 @@ export const GroupSummaryScreen = () => {
           )}
           actions={(
             <>
-              <Button type="button" onClick={viewModel.openInviteDialog}>
-                <ResponsiveContent icon={<UserPlus />}>Invite</ResponsiveContent>
-              </Button>
+              <ComponentRoleContext role="tertiary">
+                <ResponsiveButton
+                  type="button"
+                  aria-pressed={viewModel.viewMode === 'compact'}
+                  icon={viewModel.viewMode === 'compact' ? <Rows2 /> : <Rows3 />}
+                  label={`${viewModel.viewMode === 'compact' ? 'Compact' : 'Expanded'} group summary view`}
+                  onClick={viewModel.toggleViewMode}
+                >
+                  {viewModel.viewMode === 'compact' ? 'Compact' : 'Expanded'}
+                </ResponsiveButton>
+              </ComponentRoleContext>
+              <ResponsiveButton
+                type="button"
+                icon={<UserPlus />}
+                label="Invite"
+                onClick={viewModel.openInviteDialog}
+              />
               <ComponentRoleContext role="primary">
-                <Button type="button" onClick={viewModel.openAddEntryDialog}>
-                  <ResponsiveContent icon={<Plus />}>Add entry</ResponsiveContent>
-                </Button>
+                <ResponsiveButton
+                  type="button"
+                  icon={<Plus />}
+                  label="Add entry"
+                  onClick={viewModel.openAddEntryDialog}
+                />
               </ComponentRoleContext>
             </>
           )}
@@ -64,17 +79,20 @@ export const GroupSummaryScreen = () => {
 
         <BalanceSummary balanceCents={viewModel.balance.balanceCents} />
 
-        <EntryShortcuts
-          manageHref={`/groups/${group.id}/shortcuts`}
-          shortcuts={viewModel.shortcuts}
-          onUse={viewModel.openShortcutEntryDialog}
-        />
+        {viewModel.viewMode === 'expanded' && (
+          <>
+            <EntryShortcuts
+              manageHref={`/groups/${group.id}/shortcuts`}
+              shortcuts={viewModel.shortcuts}
+              onUse={viewModel.openShortcutEntryDialog}
+            />
 
-        <RecurringRules
-          group={group}
-          onAdd={viewModel.openAddRecurringDialog}
-          onEdit={viewModel.openEditRecurringDialog}
-        />
+            <RecurringRules
+              manageHref={`/groups/${group.id}/recurring`}
+              recurringItems={group.recurringItems}
+            />
+          </>
+        )}
 
         <LedgerTable
           actions={(
@@ -184,70 +202,7 @@ export const GroupSummaryScreen = () => {
           <InviteMemberForm formId={viewModel.inviteMemberFormId} onInvite={viewModel.inviteMember} />
         </AppDialog>
 
-        <AppDialog
-          open={viewModel.dialog === 'recurring'}
-          title="Add recurring"
-          onClose={viewModel.closeDialog}
-          footer={(
-            <DialogFooterActions>
-              <ComponentRoleContext role="primary">
-                <AsynchronousSubmitButton
-                  form={viewModel.addRecurringFormId}
-                  loader={viewModel.addRecurringItemLoader}
-                  statusLabel="Saving recurring..."
-                >
-                  Save recurring
-                </AsynchronousSubmitButton>
-              </ComponentRoleContext>
-            </DialogFooterActions>
-          )}
-        >
-          {viewModel.dialog === 'recurring' && (
-            <AddRecurringForm
-              formId={viewModel.addRecurringFormId}
-              today={viewModel.asOfDate}
-              onSave={viewModel.addRecurringItem}
-            />
-          )}
-        </AppDialog>
-
-        <AppDialog
-          open={viewModel.dialog === 'edit-recurring' && Boolean(selectedRecurringItem)}
-          title="Edit recurring"
-          onClose={viewModel.closeDialog}
-          footer={selectedRecurringItem && (
-            <DialogFooterActions>
-              <ComponentRoleContext role="primary">
-                <AsynchronousSubmitButton
-                  form={viewModel.editRecurringFormId}
-                  loader={viewModel.editRecurringItemLoader}
-                  statusLabel="Saving recurring..."
-                >
-                  Save recurring
-                </AsynchronousSubmitButton>
-              </ComponentRoleContext>
-              <ComponentRoleContext role="destructive">
-                <Button
-                  type="button"
-                  onClick={() => confirmDeleteRecurring(viewModel.deleteSelectedRecurringItem)}
-                >
-                  <Trash2 aria-hidden="true" />
-                  Delete
-                </Button>
-              </ComponentRoleContext>
-            </DialogFooterActions>
-          )}
-        >
-          {selectedRecurringItem && (
-            <EditRecurringForm
-              key={selectedRecurringItem.id}
-              formId={viewModel.editRecurringFormId}
-              item={selectedRecurringItem}
-              onSave={viewModel.updateSelectedRecurringItem}
-            />
-          )}
-        </AppDialog>
-      </section>
+      </Screen>
     </LoaderContainer>
   )
 }

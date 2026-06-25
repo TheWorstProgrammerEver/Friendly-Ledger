@@ -1,7 +1,6 @@
 import { Check, X } from 'lucide-react'
-import { Button } from '../../../lib/ui/Button/Button'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
 import type { LedgerViewModel } from '../../stores/friendlyLedgerStore/useLedgerViewModel'
 import styles from './InvitationPanel.module.scss'
 
@@ -24,14 +23,20 @@ export const InvitationPanel = ({ viewModel }: InvitationPanelProps) => {
             <span>{invitation.groupName}</span>
             <div className={styles.actions}>
               <ComponentRoleContext role="primary">
-                <Button type="button" onClick={() => viewModel.acceptInvitation(invitation.id)}>
-                  <ResponsiveContent icon={<Check />}>Accept</ResponsiveContent>
-                </Button>
+                <ResponsiveButton
+                  type="button"
+                  icon={<Check />}
+                  label="Accept"
+                  onClick={() => viewModel.acceptInvitation(invitation.id)}
+                />
               </ComponentRoleContext>
               <ComponentRoleContext role="destructive">
-                <Button type="button" onClick={() => viewModel.rejectInvitation(invitation.id)}>
-                  <ResponsiveContent icon={<X />}>Reject</ResponsiveContent>
-                </Button>
+                <ResponsiveButton
+                  type="button"
+                  icon={<X />}
+                  label="Reject"
+                  onClick={() => viewModel.rejectInvitation(invitation.id)}
+                />
               </ComponentRoleContext>
             </div>
           </li>

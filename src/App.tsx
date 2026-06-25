@@ -6,6 +6,7 @@ import { RequireAuth } from './routing/RequireAuth'
 import { AuthScreen } from './screens/AuthScreen/AuthScreen'
 import { GroupSummaryScreen } from './screens/GroupSummaryScreen/GroupSummaryScreen'
 import { ManageGroupsScreen } from './screens/ManageGroupsScreen/ManageGroupsScreen'
+import { ManageRecurringScreen } from './screens/ManageRecurringScreen/ManageRecurringScreen'
 import { ManageShortcutsScreen } from './screens/ManageShortcutsScreen/ManageShortcutsScreen'
 import { ProfileScreen } from './screens/ProfileScreen/ProfileScreen'
 import { AuthContextProvider } from './contexts/AuthContext'
@@ -27,6 +28,7 @@ export const App = () => (
             <Route index element={<StartScreen />} />
             <Route path="groups/manage" element={<ManageGroupsScreen />} />
             <Route path="groups/:groupId" element={<GroupSummaryScreen />} />
+            <Route path="groups/:groupId/recurring" element={<ManageRecurringScreen />} />
             <Route path="groups/:groupId/shortcuts" element={<ManageShortcutsScreen />} />
             <Route path="profile" element={<ProfileScreen />} />
           </Route>

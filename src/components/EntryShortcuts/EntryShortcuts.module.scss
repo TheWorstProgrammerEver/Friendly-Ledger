@@ -1,9 +1,7 @@
 .grid {
   display: grid;
-  grid-auto-rows: 9.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 14rem));
+  grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 13rem));
   gap: 0.7rem;
-  align-items: stretch;
   justify-content: start;
   margin: 0;
   padding: 0;
@@ -16,18 +14,16 @@
 }
 
 .card {
-  display: grid;
-  align-content: center;
-  align-items: start;
-  gap: 0.7rem;
-  justify-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
   width: 100%;
-  height: 100%;
   border-color: color-mix(in srgb, var(--color-accent-strong) 65%, transparent);
-  padding: 0.85rem;
+  padding: 0.7rem 0.8rem;
   background: color-mix(in srgb, var(--color-accent) 24%, var(--color-surface));
   color: var(--color-text);
-  text-align: center;
+  text-align: left;
 }
 
 .card:hover {
@@ -36,7 +32,8 @@
 
 .icon {
   display: block;
-  font-size: 3rem;
+  flex: 0 0 auto;
+  font-size: 1.6rem;
   line-height: 1;
 }
 
@@ -48,10 +45,4 @@
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-}
-
-@media (max-width: 560px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
 }

@@ -1,0 +1,7 @@
+.screen {
+  display: grid;
+  gap: 1.35rem;
+  width: 100%;
+  max-width: var(--app-screen-max-width);
+  margin-inline: auto;
+}

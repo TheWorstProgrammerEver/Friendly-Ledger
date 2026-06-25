@@ -208,6 +208,42 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await createGroup(page)
   let delayedInviteRequest = false
 
+  await expect(page.getByRole('link', { name: `Open profile for ${account.email}` })).toBeVisible()
+
+  await page.setViewportSize({ width: 1600, height: 900 })
+
+  const screenLayout = await page.getByRole('region', { name: 'House' }).evaluate((screen) => {
+    const main = screen.closest('main')
+    const screenBounds = screen.getBoundingClientRect()
+    const mainBounds = main?.getBoundingClientRect()
+
+    return {
+      leftSpace: mainBounds ? screenBounds.left - mainBounds.left : 0,
+      rightSpace: mainBounds ? mainBounds.right - screenBounds.right : 0,
+      width: screenBounds.width
+    }
+  })
+
+  expect(screenLayout.width).toBeLessThanOrEqual(1024)
+  expect(Math.abs(screenLayout.leftSpace - screenLayout.rightSpace)).toBeLessThanOrEqual(1)
+
+  const expandedView = page.getByRole('button', { name: 'Expanded group summary view' })
+
+  await expect(expandedView).toHaveAttribute('aria-pressed', 'false')
+  await expect(page.getByRole('region', { name: 'Shortcuts' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Recurring' })).toBeVisible()
+  await expandedView.click()
+
+  const compactView = page.getByRole('button', { name: 'Compact group summary view' })
+
+  await expect(compactView).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('region', { name: 'Shortcuts' })).not.toBeVisible()
+  await expect(page.getByRole('region', { name: 'Recurring' })).not.toBeVisible()
+  await page.reload()
+  await expect(compactView).toHaveAttribute('aria-pressed', 'true')
+  await compactView.click()
+  await expect(expandedView).toHaveAttribute('aria-pressed', 'false')
+
   await page.route('**/functions/v1/ledger', async (route) => {
     const body = route.request().postDataJSON() as { identifier?: string }
 
@@ -306,6 +342,8 @@ test('returns to a direct group URL after signing in', async ({ page }) => {
   const groupPath = await createGroup(page)
 
   await page.goto('/profile')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('button', { name: 'Add passkey' }).getByText('Add passkey')).toBeVisible()
   await page.getByRole('button', { name: 'Log out' }).click()
   await expect(page).toHaveURL(/\/sign-in$/)
   await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible()
@@ -334,12 +372,15 @@ test('accepted invitees load existing group data', async ({ page }) => {
   await entryDialog.getByRole('button', { name: 'Add entry' }).click()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Groceries')).toBeVisible()
 
+  await page.getByRole('link', { name: 'Manage recurring' }).click()
   await page.getByRole('button', { name: 'Add recurring' }).click()
   const recurringDialog = page.getByRole('dialog', { name: 'Add recurring' })
   await recurringDialog.getByLabel('Title').fill('Weekly rent')
   await recurringDialog.getByLabel('Amount').fill('500')
   await recurringDialog.getByLabel('Start date').fill(toDateInput(new Date()))
   await recurringDialog.getByRole('button', { name: 'Save recurring' }).click()
+  await expect(page.getByRole('region', { name: 'Manage recurring' }).getByText('Weekly rent')).toBeVisible()
+  await page.getByRole('link', { name: 'Back to group' }).click()
   await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
 
   await page.getByRole('link', { name: 'Manage shortcuts' }).click()
@@ -368,10 +409,10 @@ test('accepted invitees load existing group data', async ({ page }) => {
   await page.goto('/groups/manage')
   await expect(page.getByRole('region', { name: 'Invitations' }).getByText('House')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Groups' }).getByText('No groups yet')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Open' })).not.toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open House' })).not.toBeVisible()
 
   await page.getByRole('button', { name: 'Accept' }).click()
-  await page.getByRole('link', { name: 'Open' }).click()
+  await page.getByRole('link', { name: 'Open House' }).click()
 
   await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
   await expect(page.getByText('2 people')).toBeVisible()
@@ -486,6 +527,8 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
 
   const today = toDateInput(new Date())
   const futureDate = toDateInput(addDays(new Date(), 14))
+  await page.getByRole('link', { name: 'Manage recurring' }).click()
+  await expect(page).toHaveURL(/\/groups\/.+\/recurring/)
   await page.getByRole('button', { name: 'Add recurring' }).click()
 
   const recurring = page.getByRole('dialog', { name: 'Add recurring' })
@@ -494,6 +537,12 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
   await recurring.getByLabel('Start date').fill(today)
   await recurring.getByRole('button', { name: 'Save recurring' }).click()
 
+  const recurringList = page.getByRole('region', { name: 'Manage recurring' })
+  await expect(recurringList.getByText('Weekly rent')).toBeVisible()
+  await expect(recurringList.getByText(`-$500.00 weekly, from ${today}`)).toBeVisible()
+  await page.getByRole('link', { name: 'Back to group' }).click()
+
+  await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Implicit')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Weekly rent')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('1 entry')).toBeVisible()
@@ -527,27 +576,34 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
     start_date: today
   }])
 
-  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.getByRole('link', { name: 'Manage recurring' }).click()
+  await recurringList.getByRole('button', { name: 'Edit' }).click()
 
   const editRecurring = page.getByRole('dialog', { name: 'Edit recurring' })
   await expect(editRecurring.getByLabel('Amount')).toHaveValue('500')
   await editRecurring.getByLabel('Amount').fill('600')
   await editRecurring.getByRole('button', { name: 'Save recurring' }).click()
 
+  await expect(recurringList.getByText(`-$600.00 weekly, from ${today}`)).toBeVisible()
+  await page.getByRole('link', { name: 'Back to group' }).click()
+  await expect(page.getByRole('region', { name: 'Balance' }).getByText('-$600.00')).toBeVisible()
+  await page.goto(`${new URL(page.url()).pathname}?asOf=${futureDate}`)
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('-$1,800.00')).toBeVisible()
 
   const savedStateAfterEdit = await loadGroupSnapshot(account.email, 'House')
 
   expect(savedStateAfterEdit.recurringItems).toMatchObject([{ amount_cents: -60000 }])
 
-  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.getByRole('link', { name: 'Manage recurring' }).click()
   page.once('dialog', (dialog) => dialog.dismiss())
-  await page.getByRole('dialog', { name: 'Edit recurring' }).getByRole('button', { name: 'Delete' }).click()
-  await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
+  await recurringList.getByRole('button', { name: 'Delete' }).click()
+  await expect(recurringList.getByText('Weekly rent')).toBeVisible()
 
   page.once('dialog', (dialog) => dialog.accept())
-  await page.getByRole('dialog', { name: 'Edit recurring' }).getByRole('button', { name: 'Delete' }).click()
+  await recurringList.getByRole('button', { name: 'Delete' }).click()
 
+  await expect(recurringList.getByText('No recurring rules')).toBeVisible()
+  await page.getByRole('link', { name: 'Back to group' }).click()
   await expect(page.getByRole('region', { name: 'Recurring' }).getByText('No recurring rules')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('Balanced')).toBeVisible()
 })
