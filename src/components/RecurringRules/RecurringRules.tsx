@@ -1,3 +1,7 @@
+import { Pencil, Plus } from 'lucide-react'
+import { Button } from '../../../lib/ui/Button/Button'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { formatMoney } from '../../domain/money'
 import type { Group } from '../../types/ledger'
 import { Section } from '../../../lib/ui/Section/Section'
@@ -13,7 +17,13 @@ export const RecurringRules = ({ group, onAdd, onEdit }: RecurringRulesProps) =>
   <Section
     title="Recurring"
     titleId="recurring-rules-title"
-    actions={<button type="button" onClick={onAdd}>Add recurring</button>}
+    actions={(
+      <Button type="button" onClick={onAdd}>
+        <ResponsiveContent label="Add recurring" icon={<Plus />}>
+          Add
+        </ResponsiveContent>
+      </Button>
+    )}
   >
     {group.recurringItems.length > 0 ? (
       <ul className={styles.list}>
@@ -26,7 +36,11 @@ export const RecurringRules = ({ group, onAdd, onEdit }: RecurringRulesProps) =>
                 {item.endDate ? ` to ${item.endDate}` : ''}
               </small>
             </span>
-            <button type="button" onClick={() => onEdit(item.id)}>Edit</button>
+            <ComponentRoleContext role="tertiary">
+              <Button type="button" onClick={() => onEdit(item.id)}>
+                <ResponsiveContent icon={<Pencil />}>Edit</ResponsiveContent>
+              </Button>
+            </ComponentRoleContext>
           </li>
         ))}
       </ul>

@@ -1,5 +1,9 @@
+import { Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Button } from '../../../lib/ui/Button/Button'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { formatMoney } from '../../domain/money'
 import { useConfirmation } from '../../../lib/hooks/useConfirmation'
 import type { LedgerEntry } from '../../types/ledger'
@@ -59,12 +63,14 @@ export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProp
                   <td>{entry.source}</td>
                   <td>
                     {entry.source === 'manual' ? (
-                      <button
-                        type="button"
-                        onClick={() => confirmDelete(() => onDeleteEntry(entry.id))}
-                      >
-                        Delete
-                      </button>
+                      <ComponentRoleContext role="destructive">
+                        <Button
+                          type="button"
+                          onClick={() => confirmDelete(() => onDeleteEntry(entry.id))}
+                        >
+                          <ResponsiveContent icon={<Trash2 />}>Delete</ResponsiveContent>
+                        </Button>
+                      </ComponentRoleContext>
                     ) : (
                       <span className={styles.implicit}>Implicit</span>
                     )}

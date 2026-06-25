@@ -1,10 +1,15 @@
-import { Link, Navigate } from 'react-router-dom'
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { Navigate } from 'react-router-dom'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
+import { ActionLink } from '../../../lib/ui/Button/ActionLink'
+import { Button } from '../../../lib/ui/Button/Button'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { EntryShortcutForm } from '../../components/EntryShortcutForm/EntryShortcutForm'
 import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { List, ListItem } from '../../../lib/ui/List/List'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { formatMoney } from '../../domain/money'
 import { useConfirmation } from '../../../lib/hooks/useConfirmation'
 import { useManageShortcutsScreenViewModel } from './useManageShortcutsScreenViewModel'
@@ -37,8 +42,16 @@ export const ManageShortcutsScreen = () => {
         )}
         actions={(
           <>
-            <Link className={styles.secondaryLink} to={`/groups/${viewModel.group.id}`}>Back to group</Link>
-            <button type="button" onClick={viewModel.openAddDialog}>Add shortcut</button>
+            <ComponentRoleContext role="tertiary">
+              <ActionLink to={`/groups/${viewModel.group.id}`}>
+                <ResponsiveContent icon={<ArrowLeft />}>Back to group</ResponsiveContent>
+              </ActionLink>
+            </ComponentRoleContext>
+            <ComponentRoleContext role="primary">
+              <Button type="button" onClick={viewModel.openAddDialog}>
+                <ResponsiveContent icon={<Plus />}>Add shortcut</ResponsiveContent>
+              </Button>
+            </ComponentRoleContext>
           </>
         )}
       />
@@ -60,12 +73,14 @@ export const ManageShortcutsScreen = () => {
                   </>
                 )}
                 actions={(
-                  <button
-                    type="button"
-                    onClick={() => confirmDeleteShortcut(() => viewModel.deleteShortcut(shortcut.id))}
-                  >
-                    Delete
-                  </button>
+                  <ComponentRoleContext role="destructive">
+                    <Button
+                      type="button"
+                      onClick={() => confirmDeleteShortcut(() => viewModel.deleteShortcut(shortcut.id))}
+                    >
+                      <ResponsiveContent icon={<Trash2 />}>Delete</ResponsiveContent>
+                    </Button>
+                  </ComponentRoleContext>
                 )}
               />
             ))}
@@ -81,13 +96,15 @@ export const ManageShortcutsScreen = () => {
         onClose={viewModel.closeDialog}
         footer={(
           <DialogFooterActions>
-            <AsynchronousSubmitButton
-              form={viewModel.shortcutFormId}
-              loader={viewModel.addShortcutLoader}
-              statusLabel="Saving shortcut..."
-            >
-              Save shortcut
-            </AsynchronousSubmitButton>
+            <ComponentRoleContext role="primary">
+              <AsynchronousSubmitButton
+                form={viewModel.shortcutFormId}
+                loader={viewModel.addShortcutLoader}
+                statusLabel="Saving shortcut..."
+              >
+                Save shortcut
+              </AsynchronousSubmitButton>
+            </ComponentRoleContext>
           </DialogFooterActions>
         )}
       >

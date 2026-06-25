@@ -1,3 +1,7 @@
+import { KeyRound, LogOut, Pencil, Trash2 } from 'lucide-react'
+import { Button } from '../../../lib/ui/Button/Button'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { useProfileScreenViewModel } from './useProfileScreenViewModel'
 import styles from './ProfileScreen.module.scss'
 
@@ -28,14 +32,14 @@ export const ProfileScreen = () => {
       <section className={styles.passkeys} aria-labelledby="passkeys-title">
         <header>
           <h3 id="passkeys-title">Passkeys</h3>
-          <button
+          <Button
             type="button"
             aria-busy={viewModel.passkeyBusy}
             disabled={viewModel.passkeyBusy}
             onClick={() => void viewModel.registerPasskey()}
           >
-            Add passkey
-          </button>
+            <ResponsiveContent icon={<KeyRound />}>Add passkey</ResponsiveContent>
+          </Button>
         </header>
 
         {viewModel.passkeyError && (
@@ -63,20 +67,24 @@ export const ProfileScreen = () => {
                   </small>
                 </span>
                 <span className={styles.passkeyActions}>
-                  <button
-                    type="button"
-                    disabled={viewModel.passkeyBusy}
-                    onClick={() => void viewModel.renamePasskey(passkey)}
-                  >
-                    Rename
-                  </button>
-                  <button
-                    type="button"
-                    disabled={viewModel.passkeyBusy}
-                    onClick={() => viewModel.deletePasskey(passkey.id)}
-                  >
-                    Delete
-                  </button>
+                  <ComponentRoleContext role="tertiary">
+                    <Button
+                      type="button"
+                      disabled={viewModel.passkeyBusy}
+                      onClick={() => void viewModel.renamePasskey(passkey)}
+                    >
+                      <ResponsiveContent icon={<Pencil />}>Rename</ResponsiveContent>
+                    </Button>
+                  </ComponentRoleContext>
+                  <ComponentRoleContext role="destructive">
+                    <Button
+                      type="button"
+                      disabled={viewModel.passkeyBusy}
+                      onClick={() => viewModel.deletePasskey(passkey.id)}
+                    >
+                      <ResponsiveContent icon={<Trash2 />}>Delete</ResponsiveContent>
+                    </Button>
+                  </ComponentRoleContext>
                 </span>
               </li>
             ))}
@@ -84,7 +92,12 @@ export const ProfileScreen = () => {
         )}
       </section>
 
-      <button type="button" onClick={() => void viewModel.signOut()}>Log out</button>
+      <ComponentRoleContext role="tertiary">
+        <Button type="button" onClick={() => void viewModel.signOut()}>
+          <LogOut aria-hidden="true" />
+          Log out
+        </Button>
+      </ComponentRoleContext>
     </section>
   )
 }

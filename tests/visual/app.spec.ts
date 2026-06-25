@@ -254,6 +254,23 @@ test('creates a group and records a ledger entry', async ({ page }) => {
     page.getByRole('region', { name: 'Entries' }).getByRole('cell', { name: account.name })
   ).toBeVisible()
 
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  const widths = await page.evaluate(() => {
+    const main = document.querySelector('main')
+    const tableWrap = document.querySelector('table')?.parentElement
+
+    return {
+      main: { client: main?.clientWidth, scroll: main?.scrollWidth },
+      table: { client: tableWrap?.clientWidth, scroll: tableWrap?.scrollWidth }
+    }
+  })
+
+  expect(widths.main.scroll).toBe(widths.main.client)
+  expect(widths.table.scroll).toBeGreaterThan(widths.table.client ?? 0)
+
+  await page.setViewportSize({ width: 1280, height: 720 })
+
   const savedState = await loadGroupSnapshot(account.email, 'House')
   const savedEntry = savedState.entries[0]
 
@@ -298,7 +315,7 @@ test('returns to a direct group URL after signing in', async ({ page }) => {
 
   await page.getByLabel('Email', { exact: true }).fill(account.email)
   await page.getByLabel('Password', { exact: true }).fill('password')
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
 
   await expect(page).toHaveURL(new RegExp(`${groupPath}$`))
   await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
@@ -485,6 +502,21 @@ test('recurring rules are implicit ledger entries', async ({ page }) => {
   await expect(page.getByRole('button', { name: `As of ${futureDate}` })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Balance' }).getByText('-$1,500.00')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('3 entries')).toBeVisible()
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: 'Hide navigation' }).click()
+  await page.getByRole('button', { name: `As of ${futureDate}` }).click()
+
+  const menuBounds = await page.getByRole('group', { name: 'As of options' }).evaluate((menu) => {
+    const bounds = menu.getBoundingClientRect()
+
+    return { left: bounds.left, right: bounds.right, viewportWidth: window.innerWidth }
+  })
+
+  expect(menuBounds.left).toBeGreaterThanOrEqual(0)
+  expect(menuBounds.right).toBeLessThanOrEqual(menuBounds.viewportWidth)
+
+  await page.setViewportSize({ width: 1280, height: 720 })
 
   const savedStateAfterAdd = await loadGroupSnapshot(account.email, 'House')
 

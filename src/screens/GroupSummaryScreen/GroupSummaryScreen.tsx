@@ -1,6 +1,9 @@
+import { Maximize2, Plus, Trash2, UserPlus } from 'lucide-react'
 import { Navigate } from 'react-router-dom'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
+import { Button } from '../../../lib/ui/Button/Button'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { AsOfControl } from '../../components/AsOfControl/AsOfControl'
 import { BalanceSummary } from '../../components/BalanceSummary/BalanceSummary'
 import { EntryForm } from '../../components/EntryForm/EntryForm'
@@ -11,6 +14,7 @@ import { LedgerTable } from '../../components/LedgerTable/LedgerTable'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
 import { AddRecurringForm, EditRecurringForm } from '../../components/RecurringForm/RecurringForm'
 import { RecurringRules } from '../../components/RecurringRules/RecurringRules'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { ShortcutEntryForm } from '../../components/ShortcutEntryForm/ShortcutEntryForm'
 import { useConfirmation } from '../../../lib/hooks/useConfirmation'
 import { useGroupSummaryScreenViewModel } from './useGroupSummaryScreenViewModel'
@@ -46,8 +50,14 @@ export const GroupSummaryScreen = () => {
           )}
           actions={(
             <>
-              <button type="button" onClick={viewModel.openInviteDialog}>Invite</button>
-              <button type="button" onClick={viewModel.openAddEntryDialog}>Add entry</button>
+              <Button type="button" onClick={viewModel.openInviteDialog}>
+                <ResponsiveContent icon={<UserPlus />}>Invite</ResponsiveContent>
+              </Button>
+              <ComponentRoleContext role="primary">
+                <Button type="button" onClick={viewModel.openAddEntryDialog}>
+                  <ResponsiveContent icon={<Plus />}>Add entry</ResponsiveContent>
+                </Button>
+              </ComponentRoleContext>
             </>
           )}
         />
@@ -84,13 +94,15 @@ export const GroupSummaryScreen = () => {
           onClose={viewModel.closeDialog}
           footer={(
             <DialogFooterActions>
-              <AsynchronousSubmitButton
-                form={viewModel.entryFormId}
-                loader={viewModel.addEntryLoader}
-                statusLabel="Adding entry..."
-              >
-                Add entry
-              </AsynchronousSubmitButton>
+              <ComponentRoleContext role="primary">
+                <AsynchronousSubmitButton
+                  form={viewModel.entryFormId}
+                  loader={viewModel.addEntryLoader}
+                  statusLabel="Adding entry..."
+                >
+                  Add entry
+                </AsynchronousSubmitButton>
+              </ComponentRoleContext>
             </DialogFooterActions>
           )}
         >
@@ -107,15 +119,22 @@ export const GroupSummaryScreen = () => {
           onClose={viewModel.closeDialog}
           footer={selectedShortcut && (
             <DialogFooterActions>
-              <AsynchronousSubmitButton
-                form={viewModel.shortcutEntryFormId}
-                loader={viewModel.shortcutEntryLoader}
-                statusLabel="Adding entry..."
-              >
-                Add entry
-              </AsynchronousSubmitButton>
+              <ComponentRoleContext role="primary">
+                <AsynchronousSubmitButton
+                  form={viewModel.shortcutEntryFormId}
+                  loader={viewModel.shortcutEntryLoader}
+                  statusLabel="Adding entry..."
+                >
+                  Add entry
+                </AsynchronousSubmitButton>
+              </ComponentRoleContext>
               {!viewModel.shortcutExpanded && (
-                <button type="button" onClick={viewModel.expandShortcutEntryDialog}>Expand</button>
+                <ComponentRoleContext role="tertiary">
+                  <Button type="button" onClick={viewModel.expandShortcutEntryDialog}>
+                    <Maximize2 aria-hidden="true" />
+                    Expand
+                  </Button>
+                </ComponentRoleContext>
               )}
             </DialogFooterActions>
           )}
@@ -150,13 +169,15 @@ export const GroupSummaryScreen = () => {
           onClose={viewModel.closeDialog}
           footer={(
             <DialogFooterActions>
-              <AsynchronousSubmitButton
-                form={viewModel.inviteMemberFormId}
-                loader={viewModel.inviteMemberLoader}
-                statusLabel="Sending invitation..."
-              >
-                Invite
-              </AsynchronousSubmitButton>
+              <ComponentRoleContext role="primary">
+                <AsynchronousSubmitButton
+                  form={viewModel.inviteMemberFormId}
+                  loader={viewModel.inviteMemberLoader}
+                  statusLabel="Sending invitation..."
+                >
+                  Invite
+                </AsynchronousSubmitButton>
+              </ComponentRoleContext>
             </DialogFooterActions>
           )}
         >
@@ -169,13 +190,15 @@ export const GroupSummaryScreen = () => {
           onClose={viewModel.closeDialog}
           footer={(
             <DialogFooterActions>
-              <AsynchronousSubmitButton
-                form={viewModel.addRecurringFormId}
-                loader={viewModel.addRecurringItemLoader}
-                statusLabel="Saving recurring..."
-              >
-                Save recurring
-              </AsynchronousSubmitButton>
+              <ComponentRoleContext role="primary">
+                <AsynchronousSubmitButton
+                  form={viewModel.addRecurringFormId}
+                  loader={viewModel.addRecurringItemLoader}
+                  statusLabel="Saving recurring..."
+                >
+                  Save recurring
+                </AsynchronousSubmitButton>
+              </ComponentRoleContext>
             </DialogFooterActions>
           )}
         >
@@ -194,19 +217,24 @@ export const GroupSummaryScreen = () => {
           onClose={viewModel.closeDialog}
           footer={selectedRecurringItem && (
             <DialogFooterActions>
-              <AsynchronousSubmitButton
-                form={viewModel.editRecurringFormId}
-                loader={viewModel.editRecurringItemLoader}
-                statusLabel="Saving recurring..."
-              >
-                Save recurring
-              </AsynchronousSubmitButton>
-              <button
-                type="button"
-                onClick={() => confirmDeleteRecurring(viewModel.deleteSelectedRecurringItem)}
-              >
-                Delete
-              </button>
+              <ComponentRoleContext role="primary">
+                <AsynchronousSubmitButton
+                  form={viewModel.editRecurringFormId}
+                  loader={viewModel.editRecurringItemLoader}
+                  statusLabel="Saving recurring..."
+                >
+                  Save recurring
+                </AsynchronousSubmitButton>
+              </ComponentRoleContext>
+              <ComponentRoleContext role="destructive">
+                <Button
+                  type="button"
+                  onClick={() => confirmDeleteRecurring(viewModel.deleteSelectedRecurringItem)}
+                >
+                  <Trash2 aria-hidden="true" />
+                  Delete
+                </Button>
+              </ComponentRoleContext>
             </DialogFooterActions>
           )}
         >

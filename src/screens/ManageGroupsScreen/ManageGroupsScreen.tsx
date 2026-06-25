@@ -1,10 +1,15 @@
-import { NavLink } from 'react-router-dom'
+import { ArrowRight, Plus } from 'lucide-react'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
+import { ActionLink } from '../../../lib/ui/Button/ActionLink'
+import { Button } from '../../../lib/ui/Button/Button'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { GroupCreator } from '../../components/GroupCreator/GroupCreator'
+import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { InvitationPanel } from '../../components/InvitationPanel/InvitationPanel'
 import { List, ListItem } from '../../../lib/ui/List/List'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import { useManageGroupsScreenViewModel } from './useManageGroupsScreenViewModel'
 import styles from './ManageGroupsScreen.module.scss'
 
@@ -13,10 +18,16 @@ export const ManageGroupsScreen = () => {
 
   return (
     <section className={styles.screen} aria-labelledby="manage-groups-title">
-      <header>
-        <h2 id="manage-groups-title">Manage Groups</h2>
-        <button type="button" onClick={viewModel.openCreateGroup}>Create group</button>
-      </header>
+      <HeaderWithActions
+        header={<h2 id="manage-groups-title">Manage Groups</h2>}
+        actions={(
+          <ComponentRoleContext role="primary">
+            <Button type="button" onClick={viewModel.openCreateGroup}>
+              <ResponsiveContent icon={<Plus />}>Create group</ResponsiveContent>
+            </Button>
+          </ComponentRoleContext>
+        )}
+      />
 
       <InvitationPanel viewModel={viewModel.invitationViewModel} />
 
@@ -34,7 +45,13 @@ export const ManageGroupsScreen = () => {
                       <small>{group.members.length} people</small>
                     </>
                   )}
-                  actions={<NavLink to={`/groups/${group.id}`}>Open</NavLink>}
+                  actions={(
+                    <ComponentRoleContext role="tertiary">
+                      <ActionLink to={`/groups/${group.id}`}>
+                        <ResponsiveContent icon={<ArrowRight />}>Open</ResponsiveContent>
+                      </ActionLink>
+                    </ComponentRoleContext>
+                  )}
                 />
               ))}
             </List>
@@ -51,13 +68,15 @@ export const ManageGroupsScreen = () => {
         onClose={viewModel.closeCreateGroup}
         footer={(
           <DialogFooterActions>
-            <AsynchronousSubmitButton
-              form={viewModel.createGroupFormId}
-              loader={viewModel.createGroupLoader}
-              statusLabel="Creating group..."
-            >
-              Create group
-            </AsynchronousSubmitButton>
+            <ComponentRoleContext role="primary">
+              <AsynchronousSubmitButton
+                form={viewModel.createGroupFormId}
+                loader={viewModel.createGroupLoader}
+                statusLabel="Creating group..."
+              >
+                Create group
+              </AsynchronousSubmitButton>
+            </ComponentRoleContext>
           </DialogFooterActions>
         )}
       >

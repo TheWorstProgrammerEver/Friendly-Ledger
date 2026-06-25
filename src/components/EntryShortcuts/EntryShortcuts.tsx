@@ -1,4 +1,7 @@
-import { Link } from 'react-router-dom'
+import { Settings } from 'lucide-react'
+import { ActionLink } from '../../../lib/ui/Button/ActionLink'
+import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
+import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
 import type { EntryShortcut } from '../../types/ledger'
 import { Section } from '../../../lib/ui/Section/Section'
 import styles from './EntryShortcuts.module.scss'
@@ -20,7 +23,15 @@ export const EntryShortcuts = ({ manageHref, shortcuts, onUse }: EntryShortcutsP
     <Section
       title="Shortcuts"
       titleId="entry-shortcuts-title"
-      actions={<Link className={styles.manageLink} to={manageHref}>Manage shortcuts</Link>}
+      actions={(
+        <ComponentRoleContext role="tertiary">
+          <ActionLink to={manageHref}>
+            <ResponsiveContent label="Manage shortcuts" icon={<Settings />}>
+              Manage
+            </ResponsiveContent>
+          </ActionLink>
+        </ComponentRoleContext>
+      )}
     >
       {sortedShortcuts.length > 0 ? (
         <ul className={styles.grid}>
