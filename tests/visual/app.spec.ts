@@ -298,12 +298,18 @@ test('creates a group and records a ledger entry', async ({ page }) => {
 
     return {
       main: { client: main?.clientWidth, scroll: main?.scrollWidth },
-      table: { client: tableWrap?.clientWidth, scroll: tableWrap?.scrollWidth }
+      table: {
+        clientHeight: tableWrap?.clientHeight,
+        clientWidth: tableWrap?.clientWidth,
+        scrollHeight: tableWrap?.scrollHeight,
+        scrollWidth: tableWrap?.scrollWidth
+      }
     }
   })
 
   expect(widths.main.scroll).toBe(widths.main.client)
-  expect(widths.table.scroll).toBeGreaterThan(widths.table.client ?? 0)
+  expect(widths.table.scrollWidth).toBeGreaterThan(widths.table.clientWidth ?? 0)
+  expect(widths.table.scrollHeight).toBe(widths.table.clientHeight)
 
   await page.setViewportSize({ width: 1280, height: 720 })
 
@@ -341,9 +347,77 @@ test('returns to a direct group URL after signing in', async ({ page }) => {
   const account = await signIn(page)
   const groupPath = await createGroup(page)
 
+  await page.route('**/auth/v1/passkeys', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue()
+      return
+    }
+
+    await route.fulfill({
+      contentType: 'application/json',
+      json: [{
+        id: 'test-passkey',
+        friendly_name: 'Apple Passwords',
+        created_at: '2026-06-25T00:00:00.000Z'
+      }]
+    })
+  })
+
   await page.goto('/profile')
-  await page.setViewportSize({ width: 390, height: 844 })
+  const passkeys = page.getByRole('region', { name: 'Passkeys' })
+  const passkeyActions = passkeys.getByRole('group', { name: 'Apple Passwords actions' })
+
+  await expect(passkeys.getByText('Apple Passwords')).toBeVisible()
+
+  await page.setViewportSize({ width: 694, height: 844 })
+  await page.getByRole('button', { name: 'Hide navigation' }).click()
   await expect(page.getByRole('button', { name: 'Add passkey' }).getByText('Add passkey')).toBeVisible()
+
+  const regularLayout = await passkeys.evaluate((region) => {
+    const heading = region.querySelector('h3')
+    const addButton = region.querySelector('header button')
+    const item = region.querySelector('li')
+    const details = item?.firstElementChild
+    const actions = item?.lastElementChild
+
+    return {
+      actions: actions?.getBoundingClientRect().toJSON(),
+      addButton: addButton?.getBoundingClientRect().toJSON(),
+      details: details?.getBoundingClientRect().toJSON(),
+      heading: heading?.getBoundingClientRect().toJSON(),
+      item: item?.getBoundingClientRect().toJSON()
+    }
+  })
+
+  const headingCenter = (regularLayout.heading?.y ?? 0) + (regularLayout.heading?.height ?? 0) / 2
+  const addButtonCenter = (regularLayout.addButton?.y ?? 0) + (regularLayout.addButton?.height ?? 0) / 2
+
+  expect(Math.abs(headingCenter - addButtonCenter)).toBeLessThanOrEqual(1)
+  expect(regularLayout.actions?.y).toBeLessThan(regularLayout.details?.y + regularLayout.details?.height)
+
+  await page.setViewportSize({ width: 680, height: 844 })
+
+  const compactLayout = await passkeyActions.evaluate((actions) => {
+    const item = actions.closest('li')
+    const details = item?.firstElementChild
+    const actionBounds = actions.getBoundingClientRect()
+    const itemBounds = item?.getBoundingClientRect()
+    const detailsBounds = details?.getBoundingClientRect()
+
+    return {
+      actionBottom: actionBounds.right,
+      actionTop: actionBounds.top,
+      detailsBottom: detailsBounds?.bottom,
+      itemBottom: itemBounds?.right,
+      itemWidth: itemBounds?.width,
+      actionsWidth: actionBounds.width
+    }
+  })
+
+  expect(compactLayout.actionTop).toBeGreaterThanOrEqual(compactLayout.detailsBottom ?? 0)
+  expect(compactLayout.actionBottom).toBe(compactLayout.itemBottom)
+  expect(compactLayout.actionsWidth).toBeLessThan((compactLayout.itemWidth ?? 0) / 2)
+
   await page.getByRole('button', { name: 'Log out' }).click()
   await expect(page).toHaveURL(/\/sign-in$/)
   await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible()

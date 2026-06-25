@@ -62,13 +62,17 @@ export const ProfileScreen = () => {
           <ul>
             {viewModel.passkeys.map((passkey) => (
               <li key={passkey.id}>
-                <span>
+                <span className={styles.passkeyDetails}>
                   <strong>{passkey.friendlyName ?? 'Passkey'}</strong>
                   <small>
                     Created {displayDate(passkey.createdAt)} · Last used {displayDate(passkey.lastUsedAt)}
                   </small>
                 </span>
-                <span className={styles.passkeyActions}>
+                <span
+                  className={styles.passkeyActions}
+                  role="group"
+                  aria-label={`${passkey.friendlyName ?? 'Passkey'} actions`}
+                >
                   <ComponentRoleContext role="tertiary">
                     <ResponsiveButton
                       type="button"

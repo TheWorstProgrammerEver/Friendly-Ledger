@@ -55,8 +55,7 @@
   background: var(--color-surface);
 
   header,
-  li,
-  span {
+  li {
     display: flex;
     gap: 0.75rem;
   }
@@ -65,6 +64,10 @@
   li {
     align-items: center;
     justify-content: space-between;
+  }
+
+  header {
+    flex-wrap: wrap;
   }
 
   p,
@@ -84,20 +87,24 @@
     padding-top: 0.75rem;
   }
 
-  span {
-    min-width: 0;
-    flex-direction: column;
-  }
-
   small {
     color: var(--color-muted);
     font-weight: 700;
   }
 }
 
+.passkeyDetails {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .passkeys .passkeyActions {
+  display: flex;
   flex: 0 0 auto;
   flex-direction: row;
+  gap: 0.75rem;
 }
 
 .error,
@@ -115,16 +122,13 @@
 }
 
 @media (max-width: 680px) {
-  .passkeys {
-    header,
-    li {
-      align-items: stretch;
-      flex-direction: column;
-    }
+  .passkeys li {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .passkeys .passkeyActions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    align-self: flex-end;
+    justify-content: flex-end;
   }
 }
