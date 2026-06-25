@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { FormGrid } from '../../../lib/ui/FormGrid/FormGrid'
 import { parseMoneyToCents } from '../../domain/money'
 import type { EntryFormInput } from '../EntryForm/EntryForm'
-import styles from './ShortcutEntryForm.module.scss'
 
 type ShortcutEntryFormProps = {
   formId: string
@@ -38,9 +38,9 @@ export const ShortcutEntryForm = ({
   }, [])
 
   return (
-    <form
+    <FormGrid
       id={formId}
-      className={styles.form}
+      singleColumn
       onSubmit={(event) => {
         event.preventDefault()
         void onAdd({
@@ -65,6 +65,6 @@ export const ShortcutEntryForm = ({
           onChange={(event) => setAmount(event.target.value)}
         />
       </label>
-    </form>
+    </FormGrid>
   )
 }

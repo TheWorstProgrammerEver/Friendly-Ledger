@@ -1,15 +1,13 @@
 import { ArrowRight, Plus } from 'lucide-react'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
-import { ActionLink } from '../../../lib/ui/Button/ActionLink'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { GroupCreator } from '../../components/GroupCreator/GroupCreator'
 import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { InvitationPanel } from '../../components/InvitationPanel/InvitationPanel'
 import { List, ListItem } from '../../../lib/ui/List/List'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
-import { IconAndLabel, IconOnly } from '../../../lib/ui/ResponsiveContent/IconContent'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveActionLink } from '../../../lib/ui/ResponsiveActionLink/ResponsiveActionLink'
 import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
 import { Screen } from '../../components/Screen/Screen'
 import { useManageGroupsScreenViewModel } from './useManageGroupsScreenViewModel'
@@ -52,16 +50,13 @@ export const ManageGroupsScreen = () => {
                   )}
                   actions={(
                     <ComponentRoleContext role="tertiary">
-                      <ActionLink to={`/groups/${group.id}`}>
-                        <ResponsiveContent
-                          compact={<IconOnly icon={<ArrowRight />} label={`Open ${group.name}`} />}
-                          nonCompact={(
-                            <IconAndLabel icon={<ArrowRight />} label={`Open ${group.name}`}>
-                              Open
-                            </IconAndLabel>
-                          )}
-                        />
-                      </ActionLink>
+                      <ResponsiveActionLink
+                        to={`/groups/${group.id}`}
+                        icon={<ArrowRight />}
+                        label={`Open ${group.name}`}
+                      >
+                        Open
+                      </ResponsiveActionLink>
                     </ComponentRoleContext>
                   )}
                 />

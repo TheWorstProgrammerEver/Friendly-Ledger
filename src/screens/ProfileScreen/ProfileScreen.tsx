@@ -1,6 +1,8 @@
 import { KeyRound, LogOut, Pencil, Trash2 } from 'lucide-react'
+import { ActionGroup } from '../../../lib/ui/ActionGroup/ActionGroup'
 import { Button } from '../../../lib/ui/Button/Button'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
+import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { IconAndLabel } from '../../../lib/ui/ResponsiveContent/IconContent'
 import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
 import { Screen } from '../../components/Screen/Screen'
@@ -32,17 +34,19 @@ export const ProfileScreen = () => {
       </dl>
 
       <section className={styles.passkeys} aria-labelledby="passkeys-title">
-        <header>
-          <h3 id="passkeys-title">Passkeys</h3>
-          <Button
-            type="button"
-            aria-busy={viewModel.passkeyBusy}
-            disabled={viewModel.passkeyBusy}
-            onClick={() => void viewModel.registerPasskey()}
-          >
-            <IconAndLabel icon={<KeyRound />}>Add passkey</IconAndLabel>
-          </Button>
-        </header>
+        <HeaderWithActions
+          header={<h3 id="passkeys-title">Passkeys</h3>}
+          actions={(
+            <Button
+              type="button"
+              aria-busy={viewModel.passkeyBusy}
+              disabled={viewModel.passkeyBusy}
+              onClick={() => void viewModel.registerPasskey()}
+            >
+              <IconAndLabel icon={<KeyRound />}>Add passkey</IconAndLabel>
+            </Button>
+          )}
+        />
 
         {viewModel.passkeyError && (
           <p className={styles.error} role="alert">
@@ -68,10 +72,9 @@ export const ProfileScreen = () => {
                     Created {displayDate(passkey.createdAt)} · Last used {displayDate(passkey.lastUsedAt)}
                   </small>
                 </span>
-                <span
+                <ActionGroup
                   className={styles.passkeyActions}
-                  role="group"
-                  aria-label={`${passkey.friendlyName ?? 'Passkey'} actions`}
+                  ariaLabel={`${passkey.friendlyName ?? 'Passkey'} actions`}
                 >
                   <ComponentRoleContext role="tertiary">
                     <ResponsiveButton
@@ -91,7 +94,7 @@ export const ProfileScreen = () => {
                       onClick={() => viewModel.deletePasskey(passkey.id)}
                     />
                   </ComponentRoleContext>
-                </span>
+                </ActionGroup>
               </li>
             ))}
           </ul>
@@ -99,7 +102,7 @@ export const ProfileScreen = () => {
       </section>
 
       <ComponentRoleContext role="tertiary">
-        <Button type="button" onClick={() => void viewModel.signOut()}>
+        <Button className={styles.logout} type="button" onClick={() => void viewModel.signOut()}>
           <LogOut aria-hidden="true" />
           Log out
         </Button>

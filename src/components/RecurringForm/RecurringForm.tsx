@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { FormGrid } from '../../../lib/ui/FormGrid/FormGrid'
 import { parseMoneyToCents } from '../../domain/money'
 import type { RecurringFrequency, RecurringItem } from '../../types/ledger'
-import styles from './RecurringForm.module.scss'
 
 export type RecurringFormInput = {
   category: string
@@ -52,9 +52,8 @@ const RecurringEditor = ({
   const [endDate, setEndDate] = useState(initialValue?.endDate ?? '')
 
   return (
-    <form
+    <FormGrid
       id={formId}
-      className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
         void onSave({
@@ -116,7 +115,7 @@ const RecurringEditor = ({
         End date
         <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
       </label>
-    </form>
+    </FormGrid>
   )
 }
 

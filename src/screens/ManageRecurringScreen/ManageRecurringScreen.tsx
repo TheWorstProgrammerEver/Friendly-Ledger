@@ -2,13 +2,11 @@ import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Navigate } from 'react-router-dom'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
-import { ActionLink } from '../../../lib/ui/Button/ActionLink'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { HeaderWithActions } from '../../../lib/ui/HeaderWithActions/HeaderWithActions'
 import { List, ListItem } from '../../../lib/ui/List/List'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
-import { IconAndLabel, IconOnly } from '../../../lib/ui/ResponsiveContent/IconContent'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveActionLink } from '../../../lib/ui/ResponsiveActionLink/ResponsiveActionLink'
 import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
 import { AddRecurringForm, EditRecurringForm } from '../../components/RecurringForm/RecurringForm'
 import { Screen } from '../../components/Screen/Screen'
@@ -45,12 +43,11 @@ export const ManageRecurringScreen = () => {
         actions={(
           <>
             <ComponentRoleContext role="tertiary">
-              <ActionLink to={`/groups/${viewModel.group.id}`}>
-                <ResponsiveContent
-                  compact={<IconOnly icon={<ArrowLeft />} label="Back to group" />}
-                  nonCompact={<IconAndLabel icon={<ArrowLeft />}>Back to group</IconAndLabel>}
-                />
-              </ActionLink>
+              <ResponsiveActionLink
+                to={`/groups/${viewModel.group.id}`}
+                icon={<ArrowLeft />}
+                label="Back to group"
+              />
             </ComponentRoleContext>
             <ComponentRoleContext role="primary">
               <ResponsiveButton
@@ -70,6 +67,7 @@ export const ManageRecurringScreen = () => {
             {viewModel.recurringItems.map((item) => (
               <ListItem
                 key={item.id}
+                actionsLabel={`${item.title} actions`}
                 details={(
                   <>
                     <strong>{item.title}</strong>

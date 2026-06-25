@@ -375,7 +375,7 @@ test('returns to a direct group URL after signing in', async ({ page }) => {
 
   const regularLayout = await passkeys.evaluate((region) => {
     const heading = region.querySelector('h3')
-    const addButton = region.querySelector('header button')
+    const addButton = region.querySelector('button')
     const item = region.querySelector('li')
     const details = item?.firstElementChild
     const actions = item?.lastElementChild

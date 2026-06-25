@@ -1,4 +1,5 @@
 import { Check, X } from 'lucide-react'
+import { ActionGroup } from '../../../lib/ui/ActionGroup/ActionGroup'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { ResponsiveButton } from '../../../lib/ui/ResponsiveButton/ResponsiveButton'
 import type { LedgerViewModel } from '../../stores/friendlyLedgerStore/useLedgerViewModel'
@@ -21,7 +22,7 @@ export const InvitationPanel = ({ viewModel }: InvitationPanelProps) => {
         {viewModel.pendingInvitations.map((invitation) => (
           <li key={invitation.id}>
             <span>{invitation.groupName}</span>
-            <div className={styles.actions}>
+            <ActionGroup ariaLabel={`${invitation.groupName} invitation actions`}>
               <ComponentRoleContext role="primary">
                 <ResponsiveButton
                   type="button"
@@ -38,7 +39,7 @@ export const InvitationPanel = ({ viewModel }: InvitationPanelProps) => {
                   onClick={() => viewModel.rejectInvitation(invitation.id)}
                 />
               </ComponentRoleContext>
-            </div>
+            </ActionGroup>
           </li>
         ))}
       </ul>

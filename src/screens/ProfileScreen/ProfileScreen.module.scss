@@ -41,12 +41,10 @@
     font-weight: 800;
   }
 
-  button {
-    justify-self: start;
-  }
 }
 
 .passkeys {
+  container-type: inline-size;
   display: grid;
   gap: 1rem;
   border: 1px solid var(--color-border);
@@ -54,20 +52,11 @@
   padding: clamp(1rem, 3vw, 1.35rem);
   background: var(--color-surface);
 
-  header,
   li {
     display: flex;
     gap: 0.75rem;
-  }
-
-  header,
-  li {
     align-items: center;
     justify-content: space-between;
-  }
-
-  header {
-    flex-wrap: wrap;
   }
 
   p,
@@ -101,10 +90,12 @@
 }
 
 .passkeys .passkeyActions {
-  display: flex;
   flex: 0 0 auto;
-  flex-direction: row;
-  gap: 0.75rem;
+  --action-group-gap: 0.75rem;
+}
+
+.logout {
+  justify-self: start;
 }
 
 .error,
@@ -121,7 +112,7 @@
   color: var(--color-accent);
 }
 
-@media (max-width: 680px) {
+@container (max-width: 32rem) {
   .passkeys li {
     align-items: stretch;
     flex-direction: column;
@@ -129,6 +120,5 @@
 
   .passkeys .passkeyActions {
     align-self: flex-end;
-    justify-content: flex-end;
   }
 }

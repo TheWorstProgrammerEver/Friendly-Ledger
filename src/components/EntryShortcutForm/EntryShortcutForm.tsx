@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { FormGrid } from '../../../lib/ui/FormGrid/FormGrid'
 import { parseMoneyToCents } from '../../domain/money'
-import styles from './EntryShortcutForm.module.scss'
 
 export type EntryShortcutFormInput = {
   label: string
@@ -25,9 +25,8 @@ export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) =>
   const [defaultAmount, setDefaultAmount] = useState('')
 
   return (
-    <form
+    <FormGrid
       id={formId}
-      className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
         void onSave({
@@ -79,6 +78,6 @@ export const EntryShortcutForm = ({ formId, onSave }: EntryShortcutFormProps) =>
         Description
         <input value={description} onChange={(event) => setDescription(event.target.value)} />
       </label>
-    </form>
+    </FormGrid>
   )
 }

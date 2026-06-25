@@ -1,8 +1,6 @@
 import { Settings } from 'lucide-react'
-import { ActionLink } from '../../../lib/ui/Button/ActionLink'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
-import { IconAndLabel, IconOnly } from '../../../lib/ui/ResponsiveContent/IconContent'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveActionLink } from '../../../lib/ui/ResponsiveActionLink/ResponsiveActionLink'
 import type { EntryShortcut } from '../../types/ledger'
 import { Section } from '../../../lib/ui/Section/Section'
 import styles from './EntryShortcuts.module.scss'
@@ -26,16 +24,9 @@ export const EntryShortcuts = ({ manageHref, shortcuts, onUse }: EntryShortcutsP
       titleId="entry-shortcuts-title"
       actions={(
         <ComponentRoleContext role="tertiary">
-          <ActionLink to={manageHref}>
-            <ResponsiveContent
-              compact={<IconOnly icon={<Settings />} label="Manage shortcuts" />}
-              nonCompact={(
-                <IconAndLabel icon={<Settings />} label="Manage shortcuts">
-                  Manage
-                </IconAndLabel>
-              )}
-            />
-          </ActionLink>
+          <ResponsiveActionLink to={manageHref} icon={<Settings />} label="Manage shortcuts">
+            Manage
+          </ResponsiveActionLink>
         </ComponentRoleContext>
       )}
     >

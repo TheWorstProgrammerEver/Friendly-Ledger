@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import styles from './GroupCreator.module.scss'
+import { FormGrid } from '../../../lib/ui/FormGrid/FormGrid'
 
 type GroupCreatorProps = {
   formId: string
@@ -16,9 +16,9 @@ export const GroupCreator = ({ formId, onCreateGroup }: GroupCreatorProps) => {
   const [inviteEmails, setInviteEmails] = useState('')
 
   return (
-    <form
+    <FormGrid
       id={formId}
-      className={styles.form}
+      singleColumn
       onSubmit={(event) => {
         event.preventDefault()
         void onCreateGroup(name, splitEmails(inviteEmails))
@@ -37,6 +37,6 @@ export const GroupCreator = ({ formId, onCreateGroup }: GroupCreatorProps) => {
           onChange={(event) => setInviteEmails(event.target.value)}
         />
       </label>
-    </form>
+    </FormGrid>
   )
 }

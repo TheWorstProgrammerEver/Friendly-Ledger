@@ -1,11 +1,9 @@
 import { CircleUserRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { AppFrame } from '../../../lib/ui/AppFrame/AppFrame'
-import { ActionLink } from '../../../lib/ui/Button/ActionLink'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
 import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer'
-import { IconAndLabel, IconOnly } from '../../../lib/ui/ResponsiveContent/IconContent'
-import { ResponsiveContent } from '../../../lib/ui/ResponsiveContent/ResponsiveContent'
+import { ResponsiveActionLink } from '../../../lib/ui/ResponsiveActionLink/ResponsiveActionLink'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useLedgerContext } from '../../contexts/LedgerContext'
 import styles from './FriendlyLedgerFrame.module.scss'
@@ -26,16 +24,14 @@ export const FriendlyLedgerFrame = () => {
         appName={window.config?.appName ?? 'Friendly Ledger'}
         accountMenu={(
           <ComponentRoleContext role="secondary">
-            <ActionLink className={styles.profileLink} to="/profile">
-              <ResponsiveContent
-                compact={<IconOnly icon={<CircleUserRound />} label={`Open profile for ${accountEmail}`} />}
-                nonCompact={(
-                  <IconAndLabel icon={<CircleUserRound />} label={`Open profile for ${accountEmail}`}>
-                    {accountEmail}
-                  </IconAndLabel>
-                )}
-              />
-            </ActionLink>
+            <ResponsiveActionLink
+              className={styles.profileLink}
+              to="/profile"
+              icon={<CircleUserRound />}
+              label={`Open profile for ${accountEmail}`}
+            >
+              {accountEmail}
+            </ResponsiveActionLink>
           </ComponentRoleContext>
         )}
         navigation={(

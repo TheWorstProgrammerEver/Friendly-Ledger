@@ -1,3 +1,5 @@
+@use "../../../lib/ui/styles/breakpoints";
+
 .control {
   min-width: 12rem;
 }
@@ -43,7 +45,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: breakpoints.$compact) {
   .control {
     min-width: 0;
   }

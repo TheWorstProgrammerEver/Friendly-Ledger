@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { FormGrid } from '../../../lib/ui/FormGrid/FormGrid'
 import { parseMoneyToCents } from '../../domain/money'
-import styles from './EntryForm.module.scss'
 
 export type EntryFormInput = {
   date: string
@@ -38,9 +38,8 @@ export const EntryForm = ({ formId, today, initialValue, onAdd }: EntryFormProps
   )
 
   return (
-    <form
+    <FormGrid
       id={formId}
-      className={styles.form}
       onSubmit={(event) => {
         event.preventDefault()
         void onAdd({
@@ -87,6 +86,6 @@ export const EntryForm = ({ formId, today, initialValue, onAdd }: EntryFormProps
         <input value={description} onChange={(event) => setDescription(event.target.value)} />
       </label>
 
-    </form>
+    </FormGrid>
   )
 }

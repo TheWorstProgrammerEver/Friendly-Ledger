@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import styles from './InviteMemberForm.module.scss'
+import { FormGrid } from '../../../lib/ui/FormGrid/FormGrid'
 
 type InviteMemberFormProps = {
   formId: string
@@ -10,7 +10,7 @@ export const InviteMemberForm = ({ formId, onInvite }: InviteMemberFormProps) =>
   const [email, setEmail] = useState('')
 
   return (
-    <form id={formId} className={styles.form} onSubmit={(event) => {
+    <FormGrid id={formId} singleColumn onSubmit={(event) => {
       event.preventDefault()
       void onInvite(email)
     }}>
@@ -22,6 +22,6 @@ export const InviteMemberForm = ({ formId, onInvite }: InviteMemberFormProps) =>
           onChange={(event) => setEmail(event.target.value)}
         />
       </label>
-    </form>
+    </FormGrid>
   )
 }
