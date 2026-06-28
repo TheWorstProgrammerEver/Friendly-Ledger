@@ -7,6 +7,7 @@ const supabasePort = 54321
 const databasePort = 54322
 const studioPort = 54323
 const mailPort = 54324
+const supabaseProjectId = 'friendly_ledger'
 const managedProcesses = []
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -139,6 +140,26 @@ const ensureDocker = async () => {
 
   console.log('Waiting for Docker...')
   await waitFor('Docker', () => commandOk('docker', ['info']), 120000)
+}
+
+const disableSupabaseContainerRestarts = async () => {
+  const result = await run('docker', [
+    'ps',
+    '-aq',
+    '--filter',
+    `label=com.supabase.cli.project=${supabaseProjectId}`
+  ], { capture: true })
+  const containerIds = result.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  if (containerIds.length === 0) {
+    return
+  }
+
+  console.log('Disabling Docker auto-restart for Friendly Ledger Supabase containers...')
+  await run('docker', ['update', '--restart=no', ...containerIds])
 }
 
 const startSupabase = async () => {
@@ -288,6 +309,7 @@ const main = async () => {
   writeLocalConfig(lanAddress)
   await ensureDocker()
   await startSupabase()
+  await disableSupabaseContainerRestarts()
   await ensureEdgeFunctions()
   await ensureVite()
   await printEndpoints(lanAddress)
