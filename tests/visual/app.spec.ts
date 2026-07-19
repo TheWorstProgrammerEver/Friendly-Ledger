@@ -281,7 +281,7 @@ test('creates a group and records a ledger entry', async ({ page }) => {
   await createGroup(page)
   let delayedInviteRequest = false
 
-  await expect(page.getByRole('link', { name: `Open profile for ${account.email}` })).toBeVisible()
+  await expect(page.getByRole('link', { name: `Open profile for ${account.name}` })).toBeVisible()
 
   await page.setViewportSize({ width: 1600, height: 900 })
 

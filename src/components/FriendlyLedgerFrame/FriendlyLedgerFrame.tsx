@@ -6,6 +6,7 @@ import { LoaderContainer } from '../../../lib/ui/LoaderContainer/LoaderContainer
 import { ResponsiveActionLink } from '../../../lib/ui/ResponsiveActionLink/ResponsiveActionLink'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useLedgerContext } from '../../contexts/LedgerContext'
+import { getProfileButtonLabel } from './profileButtonLabel'
 import styles from './FriendlyLedgerFrame.module.scss'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) => (
@@ -15,7 +16,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) => (
 export const FriendlyLedgerFrame = () => {
   const { currentAccount } = useAuthContext()
   const { ledgerLoad, state } = useLedgerContext()
-  const accountEmail = currentAccount?.email ?? 'Profile'
+  const profileButtonLabel = getProfileButtonLabel(currentAccount)
 
   return (
     <>
@@ -28,9 +29,9 @@ export const FriendlyLedgerFrame = () => {
               className={styles.profileLink}
               to="/profile"
               icon={<CircleUserRound />}
-              label={`Open profile for ${accountEmail}`}
+              label={`Open profile for ${profileButtonLabel}`}
             >
-              {accountEmail}
+              {profileButtonLabel}
             </ResponsiveActionLink>
           </ComponentRoleContext>
         )}
