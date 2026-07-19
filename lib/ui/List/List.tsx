@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { ActionGroup } from '../ActionGroup/ActionGroup'
 import styles from './List.module.scss'
 
@@ -12,6 +13,8 @@ type ListItemProps = {
   actionsLabel?: string
   details: ReactNode
   leading?: ReactNode
+  navigationLabel?: string
+  to?: string
 }
 
 export const List = ({ ariaLabel, children }: ListProps) => (
@@ -20,22 +23,39 @@ export const List = ({ ariaLabel, children }: ListProps) => (
   </ul>
 )
 
-export const ListItem = ({ actions, actionsLabel, details, leading }: ListItemProps) => (
-  <li className={leading ? styles.withLeading : styles.item}>
-    {leading && (
-      <span className={styles.leading}>
-        {leading}
+export const ListItem = ({ actions, actionsLabel, details, leading, navigationLabel, to }: ListItemProps) => {
+  const className = [
+    leading ? styles.withLeading : styles.item,
+    to ? styles.interactive : undefined
+  ].filter(Boolean).join(' ')
+
+  const content = (
+    <>
+      {leading && (
+        <span className={styles.leading}>
+          {leading}
+        </span>
+      )}
+
+      <span className={styles.details}>
+        {details}
       </span>
-    )}
+    </>
+  )
 
-    <span className={styles.details}>
-      {details}
-    </span>
+  return (
+    <li className={className}>
+      {to ? (
+        <Link className={styles.target} to={to} aria-label={navigationLabel}>
+          {content}
+        </Link>
+      ) : content}
 
-    {actions && (
-      <ActionGroup ariaLabel={actionsLabel} className={styles.actions}>
-        {actions}
-      </ActionGroup>
-    )}
-  </li>
-)
+      {actions && (
+        <ActionGroup ariaLabel={actionsLabel} className={styles.actions}>
+          {actions}
+        </ActionGroup>
+      )}
+    </li>
+  )
+}
