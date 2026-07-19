@@ -38,6 +38,15 @@ export const invokeLedger = async (
   }
 })
 
+export const expectFunctionStatus = (error: unknown, status: number) => {
+  const context = typeof error === 'object' && error && 'context' in error
+    ? error.context
+    : undefined
+
+  expect(context).toBeInstanceOf(Response)
+  expect((context as Response).status).toBe(status)
+}
+
 export const invokeLoadLedger = async (client: SupabaseClient) => {
   const { data, error } = await invokeLedger(client, ledgerRequestIdentifiers.load, {})
 

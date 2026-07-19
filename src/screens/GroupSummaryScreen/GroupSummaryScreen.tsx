@@ -102,6 +102,7 @@ export const GroupSummaryScreen = () => {
               onChange={viewModel.setAsOfValue}
             />
           )}
+          canDeleteEntries={viewModel.currentAccountOwnsGroup}
           entries={viewModel.entries}
           onDeleteEntry={viewModel.deleteEntry}
         />

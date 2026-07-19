@@ -184,7 +184,7 @@ export const functionMutationCases = (source: SecurityFixture): FunctionMutation
     },
     {
       identifier: ledgerRequestIdentifiers.deleteEntry,
-      shouldError: false,
+      shouldError: true,
       params: {
         groupId: source.groups.hidden,
         entryId: source.rows.hiddenEntry

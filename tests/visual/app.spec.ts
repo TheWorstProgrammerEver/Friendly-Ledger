@@ -640,15 +640,16 @@ test('accepted invitees load existing group data', async ({ page }) => {
   await page.goto('/groups/manage')
   await expect(page.getByRole('region', { name: 'Invitations' }).getByText('House')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Groups' }).getByText('No groups yet')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Open House' })).not.toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open House', exact: true })).not.toBeVisible()
 
   await page.getByRole('button', { name: 'Accept' }).click()
   await expect(page.getByRole('region', { name: 'Groups' }).getByRole('button', { name: 'Delete' })).not.toBeVisible()
-  await page.getByRole('link', { name: 'Open House' }).click()
+  await page.getByRole('link', { name: 'Open House', exact: true }).click()
 
   await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
   await expect(page.getByText('2 people')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Entries' }).getByText('Groceries')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Entries' }).getByRole('button', { name: 'Delete' })).not.toBeVisible()
   await expect(page.getByRole('region', { name: 'Shortcuts' }).getByRole('button', { name: 'Paid Netflix' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Recurring' }).getByText('Weekly rent')).toBeVisible()
 })
