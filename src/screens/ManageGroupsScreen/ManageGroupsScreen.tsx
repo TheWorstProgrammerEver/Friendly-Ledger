@@ -43,6 +43,8 @@ export const ManageGroupsScreen = () => {
                 <ListItem
                   key={group.id}
                   actionsLabel={`${group.name} actions`}
+                  navigationLabel={`Open ${group.name} group`}
+                  to={`/groups/${group.id}`}
                   details={(
                     <>
                       <strong>{group.name}</strong>

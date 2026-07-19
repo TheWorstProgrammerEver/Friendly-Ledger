@@ -429,7 +429,29 @@ test('owners delete groups only after confirming the exact group name', async ({
 
   await page.goto('/groups/manage')
   const groups = page.getByRole('region', { name: 'Groups' })
+  const groupRowLink = groups.getByRole('link', { name: 'Open House group' })
+  const groupRow = groupRowLink.locator('xpath=ancestor::li[1]')
+
   await expect(groups.locator('strong', { hasText: 'House' })).toBeVisible()
+  await expect(groupRowLink).toHaveCSS('cursor', 'pointer')
+  const regularBackground = await groupRow.evaluate((row) => getComputedStyle(row).backgroundColor)
+  await groupRowLink.hover()
+  await expect(groupRow).not.toHaveCSS('background-color', regularBackground)
+  await page.mouse.move(0, 0)
+  await groupRowLink.focus()
+  await expect(groupRowLink).toBeFocused()
+  await expect(groupRow).not.toHaveCSS('background-color', regularBackground)
+
+  await groupRowLink.click()
+  await expect(page).toHaveURL(new RegExp(`${groupPath}$`))
+  await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
+
+  await page.goto('/groups/manage')
+  await groups.getByRole('group', { name: 'House actions' }).getByRole('link', { name: 'Open House' }).click()
+  await expect(page).toHaveURL(new RegExp(`${groupPath}$`))
+  await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
+
+  await page.goto('/groups/manage')
   await expect(groups.getByRole('button', { name: 'Delete' })).toBeVisible()
 
   const mistypedDialogs = answerDialogs(page, [
@@ -441,6 +463,7 @@ test('owners delete groups only after confirming the exact group name', async ({
   await groups.getByRole('button', { name: 'Delete' }).click()
   mistypedDialogs.dispose()
 
+  await expect(page).toHaveURL(/\/groups\/manage$/)
   expect(mistypedDialogs.messages).toEqual([
     'Delete House? This cannot be undone.',
     'Type House to permanently delete this group.',
