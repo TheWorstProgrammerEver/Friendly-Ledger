@@ -223,7 +223,7 @@ export const expectFunctionAllowedWritesWork = async (
   const inviteEmail = `${prefix}-function-positive-invitee@example.com`
   const createGroupResult = await invokeLedger(ownerClient, ledgerRequestIdentifiers.createGroup, {
     name: `${prefix} function created group`,
-    inviteEmails: []
+    inviteEmails: [`${prefix}-delete-cascade-invitee@example.com`]
   })
 
   expect(createGroupResult.error).toBeFalsy()
@@ -351,4 +351,53 @@ export const expectFunctionAllowedWritesWork = async (
   expect(rejectResult.error).toBeFalsy()
   await expectNoAdminRows('group_invitations', 'id', invitations.rejectVisible)
   await expectAdminRowMissing('group_members', rows.rejectInvitedMember)
+
+  const cascadeGroupId = createGroupResult.data.group.id
+  const cascadeEntryResult = await invokeLedger(ownerClient, ledgerRequestIdentifiers.addEntry, {
+    groupId: cascadeGroupId,
+    input: {
+      date: today,
+      description: 'Function cascade entry',
+      category: 'Security',
+      amountCents: 300
+    }
+  })
+  const cascadeShortcutResult = await invokeLedger(ownerClient, ledgerRequestIdentifiers.addEntryShortcut, {
+    groupId: cascadeGroupId,
+    input: {
+      label: 'Function cascade shortcut',
+      emoji: 'S',
+      description: 'Function cascade shortcut entry',
+      category: 'Security',
+      effect: 'positive',
+      defaultAmountCents: 300
+    }
+  })
+  const cascadeRecurringResult = await invokeLedger(ownerClient, ledgerRequestIdentifiers.addRecurringItem, {
+    groupId: cascadeGroupId,
+    input: {
+      title: 'Function cascade recurring',
+      category: 'Security',
+      amountCents: -300,
+      frequency: 'weekly',
+      startDate: today
+    }
+  })
+
+  expect(cascadeEntryResult.error).toBeFalsy()
+  expect(cascadeShortcutResult.error).toBeFalsy()
+  expect(cascadeRecurringResult.error).toBeFalsy()
+
+  const deleteGroupResult = await invokeLedger(ownerClient, ledgerRequestIdentifiers.deleteGroup, {
+    groupId: cascadeGroupId
+  })
+
+  expect(deleteGroupResult.error).toBeFalsy()
+  expect(deleteGroupResult.data.groupId).toBe(cascadeGroupId)
+  await expectNoAdminRows('groups', 'id', cascadeGroupId)
+  await expectNoAdminRows('group_members', 'group_id', cascadeGroupId)
+  await expectNoAdminRows('group_invitations', 'group_id', cascadeGroupId)
+  await expectNoAdminRows('ledger_entries', 'group_id', cascadeGroupId)
+  await expectNoAdminRows('entry_shortcuts', 'group_id', cascadeGroupId)
+  await expectNoAdminRows('recurring_items', 'group_id', cascadeGroupId)
 }

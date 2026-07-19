@@ -4,6 +4,7 @@ export const ledgerRequestIdentifiers = {
   addEntryShortcut: 'addEntryShortcut',
   addRecurringItem: 'addRecurringItem',
   createGroup: 'createGroup',
+  deleteGroup: 'deleteGroup',
   deleteEntry: 'deleteEntry',
   deleteEntryShortcut: 'deleteEntryShortcut',
   deleteRecurringItem: 'deleteRecurringItem',

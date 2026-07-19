@@ -44,6 +44,10 @@ export type DeleteLedgerEntryParams = GroupIdParams & {
   entryId: string
 }
 
+export type DeleteLedgerGroupResult = {
+  groupId: string
+}
+
 export type LedgerEntryShortcutParams = GroupIdParams & {
   input: EntryShortcutInput
 }
@@ -102,6 +106,7 @@ export type DeleteLedgerRecurringItemResult = {
 
 export const LoadLedgerQuery = createQueryType(ledgerRequestIdentifiers.load)<FriendlyLedgerState, LoadLedgerParams>()
 export const CreateLedgerGroupCommand = createCommandType(ledgerRequestIdentifiers.createGroup)<CreateLedgerGroupResult, CreateLedgerGroupParams>()
+export const DeleteLedgerGroupCommand = createCommandType(ledgerRequestIdentifiers.deleteGroup)<DeleteLedgerGroupResult, GroupIdParams>()
 export const InviteLedgerMemberCommand = createCommandType(ledgerRequestIdentifiers.inviteMember)<InviteLedgerMemberResult, InviteLedgerMemberParams>()
 export const AcceptLedgerInvitationCommand = createCommandType(ledgerRequestIdentifiers.acceptInvitation)<AcceptLedgerInvitationResult, AcceptLedgerInvitationParams>()
 export const RejectLedgerInvitationCommand = createCommandType(ledgerRequestIdentifiers.rejectInvitation)<RejectLedgerInvitationResult, RejectLedgerInvitationParams>()
@@ -116,6 +121,7 @@ export const DeleteLedgerRecurringItemCommand = createCommandType(ledgerRequestI
 export const ledgerRequestTypes = [
   LoadLedgerQuery,
   CreateLedgerGroupCommand,
+  DeleteLedgerGroupCommand,
   InviteLedgerMemberCommand,
   AcceptLedgerInvitationCommand,
   RejectLedgerInvitationCommand,

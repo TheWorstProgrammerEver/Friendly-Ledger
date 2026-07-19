@@ -75,6 +75,7 @@ export type RecurringItem = {
 export type Group = {
   id: string
   name: string
+  createdByAccountId?: string
   members: Member[]
   invitations: Invitation[]
   entries: LedgerEntry[]

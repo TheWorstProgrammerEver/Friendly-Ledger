@@ -257,6 +257,19 @@ export const functionMutationCases = (source: SecurityFixture): FunctionMutation
       verifyUnchanged: () => expectRecurringTitle(source.rows.hiddenRecurring, 'Hidden recurring')
     },
     {
+      identifier: ledgerRequestIdentifiers.deleteGroup,
+      shouldError: true,
+      params: {
+        groupId: source.groups.hidden
+      },
+      verifyUnchanged: async () => {
+        const group = await expectAdminRow<{ name: string }>('groups', source.groups.hidden, 'name')
+
+        expect(group.name).toBe(`${source.prefix} hidden group`)
+        await expectEntryDescription(source.rows.hiddenEntry, 'Hidden entry')
+      }
+    },
+    {
       identifier: ledgerRequestIdentifiers.inviteMember,
       shouldError: true,
       params: {

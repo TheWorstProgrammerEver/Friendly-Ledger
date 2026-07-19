@@ -1,7 +1,7 @@
 import type { RequestHandlers } from '../../../../lib/dispatch/dispatch.ts'
 import type { LedgerInvocationContext } from '../types/context.ts'
 import { createAddEntryHandler, createDeleteEntryHandler } from './entries.ts'
-import { createCreateGroupHandler, createLoadLedgerHandler } from './groups.ts'
+import { createCreateGroupHandler, createDeleteGroupHandler, createLoadLedgerHandler } from './groups.ts'
 import type { LedgerRequestHandlerFactory } from './handlerFactory.ts'
 import {
   createAcceptInvitationHandler,
@@ -22,6 +22,7 @@ const handlerFactories: LedgerRequestHandlerFactory[] = [
   createAddRecurringItemHandler,
   createCreateGroupHandler,
   createDeleteEntryHandler,
+  createDeleteGroupHandler,
   createDeleteEntryShortcutHandler,
   createDeleteRecurringItemHandler,
   createInviteMemberHandler,

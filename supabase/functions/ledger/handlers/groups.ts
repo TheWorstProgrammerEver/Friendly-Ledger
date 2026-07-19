@@ -1,5 +1,5 @@
 import { ledgerRequestIdentifiers } from '../../../../common/ledgerRequestIdentifiers.ts'
-import { nameFromEmail, todayIso, trimOrDefault, uniqueEmails } from '../helpers.ts'
+import { HttpError, nameFromEmail, todayIso, trimOrDefault, uniqueEmails } from '../helpers.ts'
 import { loadState } from '../ledgerState.ts'
 import { getProfile } from '../profile.ts'
 import { createLedgerRequestHandlerFactory } from './handlerFactory.ts'
@@ -7,6 +7,10 @@ import { createLedgerRequestHandlerFactory } from './handlerFactory.ts'
 type CreateGroupParams = {
   name: string
   inviteEmails: string[]
+}
+
+type DeleteGroupParams = {
+  groupId: string
 }
 
 export const createLoadLedgerHandler = createLedgerRequestHandlerFactory(ledgerRequestIdentifiers.load, ({ client, user }) =>
@@ -84,6 +88,7 @@ export const createCreateGroupHandler = createLedgerRequestHandlerFactory(ledger
       group: {
         id: groupId,
         name: trimOrDefault(name, 'House ledger'),
+        createdByAccountId: profile.id,
         createdDate,
         members: [
           {
@@ -112,4 +117,26 @@ export const createCreateGroupHandler = createLedgerRequestHandlerFactory(ledger
         recurringItems: []
       }
     }
+  })
+
+export const createDeleteGroupHandler = createLedgerRequestHandlerFactory(ledgerRequestIdentifiers.deleteGroup, ({ client, user }) =>
+  async (request) => {
+    const { groupId } = request.params as DeleteGroupParams
+    const profile = await getProfile(client, user)
+    const { data, error } = await client
+      .from('groups')
+      .delete()
+      .eq('id', groupId)
+      .eq('created_by_profile_id', profile.id)
+      .select('id')
+
+    if (error) {
+      throw error
+    }
+
+    if ((data ?? []).length === 0) {
+      throw new HttpError(403, 'Only the group owner can delete this group.')
+    }
+
+    return { groupId }
   })
