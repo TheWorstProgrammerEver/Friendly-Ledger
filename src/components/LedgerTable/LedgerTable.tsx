@@ -10,6 +10,7 @@ import styles from './LedgerTable.module.scss'
 
 type LedgerTableProps = {
   actions?: ReactNode
+  canDeleteEntries?: boolean
   entries: LedgerEntry[]
   onDeleteEntry: (entryId: string) => void
 }
@@ -26,7 +27,7 @@ const entryCountLabel = (entryCount: number) => (
   `${entryCount} ${entryCount === 1 ? 'entry' : 'entries'}`
 )
 
-export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProps) => {
+export const LedgerTable = ({ actions, canDeleteEntries = false, entries, onDeleteEntry }: LedgerTableProps) => {
   const confirmDelete = useConfirmation('Delete this manual entry?')
 
   return (
@@ -48,7 +49,7 @@ export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProp
                 <th>Amount</th>
                 <th>Entered by</th>
                 <th>Source</th>
-                <th>Action</th>
+                {canDeleteEntries && <th>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -60,20 +61,22 @@ export const LedgerTable = ({ actions, entries, onDeleteEntry }: LedgerTableProp
                   <td>{formatMoney(entry.amountCents)}</td>
                   <td>{createdByLabel(entry)}</td>
                   <td>{entry.source}</td>
-                  <td>
-                    {entry.source === 'manual' ? (
-                      <ComponentRoleContext role="destructive">
-                        <ResponsiveButton
-                          type="button"
-                          icon={<Trash2 />}
-                          label="Delete"
-                          onClick={() => confirmDelete(() => onDeleteEntry(entry.id))}
-                        />
-                      </ComponentRoleContext>
-                    ) : (
-                      <span className={styles.implicit}>Implicit</span>
-                    )}
-                  </td>
+                  {canDeleteEntries && (
+                    <td>
+                      {entry.source === 'manual' ? (
+                        <ComponentRoleContext role="destructive">
+                          <ResponsiveButton
+                            type="button"
+                            icon={<Trash2 />}
+                            label="Delete"
+                            onClick={() => confirmDelete(() => onDeleteEntry(entry.id))}
+                          />
+                        </ComponentRoleContext>
+                      ) : (
+                        <span className={styles.implicit}>Implicit</span>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

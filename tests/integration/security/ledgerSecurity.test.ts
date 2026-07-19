@@ -1,10 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { ledgerRequestNames } from '../../../common/ledgerRequestIdentifiers'
+import { ledgerRequestIdentifiers, ledgerRequestNames } from '../../../common/ledgerRequestIdentifiers'
 import {
   expectAdminRow,
   expectDirectGroupAccess,
   expectDirectMutationBlocked,
+  expectFunctionStatus,
   expectFunctionGroupAccess,
   groupExpectation,
   ids,
@@ -176,6 +177,30 @@ describe('ledger security integration', () => {
     const group = await expectAdminRow<{ name: string }>('groups', securityFixture.groups.visible, 'name')
 
     expect(group.name).toBe(`${securityFixture.prefix} visible group`)
+    await expectAdminRow<IdRow>('ledger_entries', securityFixture.rows.visibleEntry, 'id')
+  })
+
+  test('active non-owner members cannot directly delete ledger entries', async () => {
+    const securityFixture = requireFixture()
+    const { data } = await memberClient
+      .from('ledger_entries')
+      .delete()
+      .eq('id', securityFixture.rows.visibleEntry)
+      .select('id')
+
+    expect(data ?? []).toHaveLength(0)
+    await expectAdminRow<IdRow>('ledger_entries', securityFixture.rows.visibleEntry, 'id')
+  })
+
+  test('active non-owner members cannot delete ledger entries through functions', async () => {
+    const securityFixture = requireFixture()
+    const { error } = await invokeLedger(memberClient, ledgerRequestIdentifiers.deleteEntry, {
+      groupId: securityFixture.groups.visible,
+      entryId: securityFixture.rows.visibleEntry
+    })
+
+    expect(error).toBeTruthy()
+    expectFunctionStatus(error, 403)
     await expectAdminRow<IdRow>('ledger_entries', securityFixture.rows.visibleEntry, 'id')
   })
 

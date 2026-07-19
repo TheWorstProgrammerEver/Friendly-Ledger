@@ -49,7 +49,7 @@ export const createAddEntryHandler = createLedgerRequestHandlerFactory(ledgerReq
     return ledgerEntryFromRow(entry)
   })
 
-export const createDeleteEntryHandler = createLedgerRequestHandlerFactory(ledgerRequestIdentifiers.deleteEntry, ({ client }) =>
+export const createDeleteEntryHandler = createLedgerRequestHandlerFactory(ledgerRequestIdentifiers.deleteEntry, ({ client, user }) =>
   async (request) => {
     const { groupId, entryId } = request.params as DeleteEntryParams
 
@@ -57,14 +57,33 @@ export const createDeleteEntryHandler = createLedgerRequestHandlerFactory(ledger
       throw new HttpError(400, 'Choose an entry to delete.')
     }
 
-    const { error } = await client
+    const { data: groups, error: groupError } = await client
+      .from('groups')
+      .select('id')
+      .eq('id', groupId)
+      .eq('created_by_profile_id', user.id)
+
+    if (groupError) {
+      throw groupError
+    }
+
+    if ((groups ?? []).length === 0) {
+      throw new HttpError(403, 'Only the group owner can delete ledger entries.')
+    }
+
+    const { data, error } = await client
       .from('ledger_entries')
       .delete()
       .eq('id', entryId)
       .eq('group_id', groupId)
+      .select('id')
 
     if (error) {
       throw error
+    }
+
+    if ((data ?? []).length === 0) {
+      throw new HttpError(404, 'Ledger entry not found.')
     }
 
     return { groupId, entryId }

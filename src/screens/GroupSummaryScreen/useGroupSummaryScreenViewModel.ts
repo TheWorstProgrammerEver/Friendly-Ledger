@@ -36,6 +36,7 @@ export const useGroupSummaryScreenViewModel = () => {
   const currentAccountId = ledger.currentAccount?.id
   const [viewMode, setViewMode] = useState<GroupSummaryViewMode>(() => readViewMode(currentAccountId))
   const group = ledger.state.groups.find((candidate) => candidate.id === groupId)
+  const currentAccountOwnsGroup = group?.createdByAccountId === currentAccountId
   const dialog = searchParams.get('dialog')
   const shortcutId = searchParams.get('shortcutId')
   const shortcutExpanded = searchParams.get('shortcutExpanded') === 'true'
@@ -173,6 +174,7 @@ export const useGroupSummaryScreenViewModel = () => {
     asOfValue,
     balance,
     closeDialog,
+    currentAccountOwnsGroup,
     deleteEntry,
     dialog,
     entryFormId,
