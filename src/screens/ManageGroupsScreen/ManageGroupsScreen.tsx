@@ -1,4 +1,4 @@
-import { ArrowRight, Plus } from 'lucide-react'
+import { ArrowRight, Plus, Trash2 } from 'lucide-react'
 import { AppDialog, DialogFooterActions } from '../../../lib/ui/AppDialog/AppDialog'
 import { AsynchronousSubmitButton } from '../../../lib/ui/AsynchronousSubmitButton/AsynchronousSubmitButton'
 import { ComponentRoleContext } from '../../../lib/ui/ComponentRoleContext/ComponentRoleContext'
@@ -42,6 +42,7 @@ export const ManageGroupsScreen = () => {
               {viewModel.groups.map((group) => (
                 <ListItem
                   key={group.id}
+                  actionsLabel={`${group.name} actions`}
                   details={(
                     <>
                       <strong>{group.name}</strong>
@@ -49,15 +50,27 @@ export const ManageGroupsScreen = () => {
                     </>
                   )}
                   actions={(
-                    <ComponentRoleContext role="tertiary">
-                      <ResponsiveActionLink
-                        to={`/groups/${group.id}`}
-                        icon={<ArrowRight />}
-                        label={`Open ${group.name}`}
-                      >
-                        Open
-                      </ResponsiveActionLink>
-                    </ComponentRoleContext>
+                    <>
+                      <ComponentRoleContext role="tertiary">
+                        <ResponsiveActionLink
+                          to={`/groups/${group.id}`}
+                          icon={<ArrowRight />}
+                          label={`Open ${group.name}`}
+                        >
+                          Open
+                        </ResponsiveActionLink>
+                      </ComponentRoleContext>
+                      {group.createdByAccountId === viewModel.currentAccount?.id && (
+                        <ComponentRoleContext role="destructive">
+                          <ResponsiveButton
+                            type="button"
+                            icon={<Trash2 />}
+                            label="Delete"
+                            onClick={() => viewModel.deleteGroup(group)}
+                          />
+                        </ComponentRoleContext>
+                      )}
+                    </>
                   )}
                 />
               ))}

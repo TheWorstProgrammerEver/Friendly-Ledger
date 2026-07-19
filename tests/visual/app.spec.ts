@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Dialog, type Page } from '@playwright/test'
 import { nameFromEmail } from '../../src/domain/people'
 import { routeRuntimeConfig } from './runtimeConfig'
 import { deleteSupabaseUsersByEmail, getSupabaseAdminClient } from './supabaseTestAuth'
@@ -98,6 +98,79 @@ const loadGroupSnapshot = async (email: string, name: string) => {
   return {
     entries: entries ?? [],
     recurringItems: recurringItems ?? []
+  }
+}
+
+const loadGroupDeletionSnapshot = async (groupPath: string) => {
+  const groupId = groupPath.split('/').at(-1)
+
+  if (!groupId) {
+    throw new Error(`Could not read group id from ${groupPath}`)
+  }
+
+  const admin = getSupabaseAdminClient()
+  const childTables = [
+    'group_members',
+    'group_invitations',
+    'ledger_entries',
+    'entry_shortcuts',
+    'recurring_items'
+  ] as const
+  const { data: groups, error: groupError } = await admin
+    .from('groups')
+    .select('id')
+    .eq('id', groupId)
+
+  if (groupError) {
+    throw groupError
+  }
+
+  const children = await Promise.all(childTables.map(async (table) => {
+    const { data, error } = await admin
+      .from(table)
+      .select('id')
+      .eq('group_id', groupId)
+
+    if (error) {
+      throw error
+    }
+
+    return [table, data ?? []] as const
+  }))
+
+  const childRows = Object.fromEntries(children) as Record<typeof childTables[number], { id: string }[]>
+
+  return {
+    groups: groups ?? [],
+    ...childRows
+  }
+}
+
+type DialogAnswer = {
+  promptText?: string
+  type: 'alert' | 'confirm' | 'prompt'
+}
+
+const answerDialogs = (page: Page, answers: DialogAnswer[]) => {
+  const pending = [...answers]
+  const messages: string[] = []
+  const handler = async (dialog: Dialog) => {
+    const answer = pending.shift()
+
+    if (!answer) {
+      throw new Error(`Unexpected ${dialog.type()} dialog: ${dialog.message()}`)
+    }
+
+    expect(dialog.type()).toBe(answer.type)
+    messages.push(dialog.message())
+    await dialog.accept(answer.promptText)
+  }
+
+  page.on('dialog', handler)
+
+  return {
+    messages,
+    dispose: () => page.off('dialog', handler)
   }
 }
 
@@ -343,6 +416,67 @@ test('loads a direct group URL after the app reloads', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()
 })
 
+test('owners delete groups only after confirming the exact group name', async ({ page }) => {
+  await signIn(page)
+  const groupPath = await createGroup(page)
+
+  await page.getByRole('button', { name: 'Add entry' }).click()
+  const entryDialog = page.getByRole('dialog', { name: 'Add entry' })
+  await entryDialog.getByLabel('Amount').fill('45')
+  await entryDialog.getByLabel('Description').fill('Groceries')
+  await entryDialog.getByRole('button', { name: 'Add entry' }).click()
+  await expect(page.getByRole('region', { name: 'Entries' }).getByText('Groceries')).toBeVisible()
+
+  await page.goto('/groups/manage')
+  const groups = page.getByRole('region', { name: 'Groups' })
+  await expect(groups.locator('strong', { hasText: 'House' })).toBeVisible()
+  await expect(groups.getByRole('button', { name: 'Delete' })).toBeVisible()
+
+  const mistypedDialogs = answerDialogs(page, [
+    { type: 'confirm' },
+    { type: 'prompt', promptText: 'Wrong House' },
+    { type: 'alert' }
+  ])
+
+  await groups.getByRole('button', { name: 'Delete' }).click()
+  mistypedDialogs.dispose()
+
+  expect(mistypedDialogs.messages).toEqual([
+    'Delete House? This cannot be undone.',
+    'Type House to permanently delete this group.',
+    'The group name was mistyped. The group was not deleted.'
+  ])
+  await expect(groups.locator('strong', { hasText: 'House' })).toBeVisible()
+
+  const beforeDelete = await loadGroupDeletionSnapshot(groupPath)
+
+  expect(beforeDelete.groups).toHaveLength(1)
+  expect(beforeDelete.ledger_entries).toHaveLength(1)
+
+  const deleteDialogs = answerDialogs(page, [
+    { type: 'confirm' },
+    { type: 'prompt', promptText: 'House' }
+  ])
+
+  await groups.getByRole('button', { name: 'Delete' }).click()
+  deleteDialogs.dispose()
+
+  expect(deleteDialogs.messages).toEqual([
+    'Delete House? This cannot be undone.',
+    'Type House to permanently delete this group.'
+  ])
+  await expect(groups.getByText('No groups yet')).toBeVisible()
+
+  const afterDelete = await loadGroupDeletionSnapshot(groupPath)
+
+  expect(afterDelete.groups).toHaveLength(0)
+  expect(afterDelete.group_members).toHaveLength(0)
+  expect(afterDelete.group_invitations).toHaveLength(0)
+  expect(afterDelete.ledger_entries).toHaveLength(0)
+  expect(afterDelete.entry_shortcuts).toHaveLength(0)
+  expect(afterDelete.recurring_items).toHaveLength(0)
+})
+
 test('returns to a direct group URL after signing in', async ({ page }) => {
   const account = await signIn(page)
   const groupPath = await createGroup(page)
@@ -486,6 +620,7 @@ test('accepted invitees load existing group data', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Open House' })).not.toBeVisible()
 
   await page.getByRole('button', { name: 'Accept' }).click()
+  await expect(page.getByRole('region', { name: 'Groups' }).getByRole('button', { name: 'Delete' })).not.toBeVisible()
   await page.getByRole('link', { name: 'Open House' }).click()
 
   await expect(page.getByRole('heading', { name: 'House' })).toBeVisible()

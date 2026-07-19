@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { ledgerRequestNames } from '../../../common/ledgerRequestIdentifiers'
 import {
+  expectAdminRow,
   expectDirectGroupAccess,
   expectDirectMutationBlocked,
   expectFunctionGroupAccess,
@@ -160,6 +161,22 @@ describe('ledger security integration', () => {
     for (const mutation of directMutationCases(requireFixture())) {
       await expectDirectMutationBlocked(ownerClient, mutation)
     }
+  })
+
+  test('active non-owner members cannot directly delete groups', async () => {
+    const securityFixture = requireFixture()
+    const { data } = await memberClient
+      .from('groups')
+      .delete()
+      .eq('id', securityFixture.groups.visible)
+      .select('id')
+
+    expect(data ?? []).toHaveLength(0)
+
+    const group = await expectAdminRow<{ name: string }>('groups', securityFixture.groups.visible, 'name')
+
+    expect(group.name).toBe(`${securityFixture.prefix} visible group`)
+    await expectAdminRow<IdRow>('ledger_entries', securityFixture.rows.visibleEntry, 'id')
   })
 
   test('protected functions cannot create, update, or delete rows outside the caller groups', async () => {

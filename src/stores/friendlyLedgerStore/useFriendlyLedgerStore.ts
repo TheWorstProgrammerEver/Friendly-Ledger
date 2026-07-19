@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CreateLedgerGroupCommand,
+  DeleteLedgerGroupCommand,
   LoadLedgerQuery
 } from '../../data/ledger/requests'
 import { ledgerDispatcher } from '../../data/ledger/ledgerDispatcher'
@@ -13,7 +14,7 @@ import { useInvitationActions } from './ledgerActions/useInvitationActions'
 import { useRecurringActions } from './ledgerActions/useRecurringActions'
 import { useShortcutActions } from './ledgerActions/useShortcutActions'
 import type { LedgerStateProjection } from './ledgerStateUpdates'
-import { withCreatedGroup } from './ledgerStateUpdates'
+import { withCreatedGroup, withDeletedGroup } from './ledgerStateUpdates'
 
 const emptyState: FriendlyLedgerState = {
   groups: [],
@@ -115,6 +116,14 @@ export const useFriendlyLedgerStore = (currentAccount?: Account) => {
     return result?.group.id
   }, [currentAccount, runLedgerAction])
 
+  const deleteGroup = useCallback((groupId: string) => {
+    if (!currentAccount || !groupId) {
+      return
+    }
+
+    return runLedgerAction(new DeleteLedgerGroupCommand({ groupId }), withDeletedGroup)
+  }, [currentAccount, runLedgerAction])
+
   const selectGroup = useCallback((groupId: string) => {
     setState((currentState) => (
       currentState.activeGroupId === groupId
@@ -132,6 +141,7 @@ export const useFriendlyLedgerStore = (currentAccount?: Account) => {
     ...recurringActions,
     ...shortcutActions,
     createGroup,
+    deleteGroup,
     ledgerLoad: ledgerLoadState,
     selectGroup
   }

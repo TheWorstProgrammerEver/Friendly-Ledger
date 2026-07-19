@@ -10,6 +10,7 @@ import type {
   CreateLedgerGroupResult,
   DeleteLedgerEntryResult,
   DeleteLedgerEntryShortcutResult,
+  DeleteLedgerGroupResult,
   DeleteLedgerRecurringItemResult,
   InviteLedgerMemberResult,
   RejectLedgerInvitationResult
@@ -62,6 +63,19 @@ export const withCreatedGroup: LedgerStateProjection<CreateLedgerGroupResult> = 
   activeGroupId: result.group.id,
   groups: sortGroups(replaceOrAppend(state.groups, result.group))
 })
+
+export const withDeletedGroup: LedgerStateProjection<DeleteLedgerGroupResult> = (state, result) => {
+  const groups = state.groups.filter((group) => group.id !== result.groupId)
+  const nextActiveGroupId = state.activeGroupId === result.groupId
+    ? groups[0]?.id
+    : state.activeGroupId
+
+  return {
+    ...state,
+    activeGroupId: nextActiveGroupId,
+    groups
+  }
+}
 
 export const withInvitedMember: LedgerStateProjection<InviteLedgerMemberResult> = (state, result) => (
   updateGroup(state, result.groupId, (group) => ({

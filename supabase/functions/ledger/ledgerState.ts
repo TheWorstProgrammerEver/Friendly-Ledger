@@ -18,6 +18,7 @@ import {
 type GroupRow = {
   id: string
   name: string
+  created_by_profile_id: string
   created_date: string
 }
 
@@ -53,7 +54,7 @@ export const loadState = async (client: SupabaseClient, userId: string, userEmai
   const groups = await selectRows<GroupRow>(
     client
       .from('groups')
-      .select('id, name, created_date')
+      .select('id, name, created_by_profile_id, created_date')
       .in('id', groupIds)
       .order('created_date', { ascending: true })
       .order('name', { ascending: true })
@@ -104,6 +105,7 @@ export const loadState = async (client: SupabaseClient, userId: string, userEmai
     groups: groups.map((group) => ({
       id: group.id,
       name: group.name,
+      createdByAccountId: group.created_by_profile_id,
       createdDate: group.created_date,
       members: members
         .filter((member) => member.group_id === group.id)
